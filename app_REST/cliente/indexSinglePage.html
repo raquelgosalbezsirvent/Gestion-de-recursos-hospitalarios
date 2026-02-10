@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf8">
+    <title>Ejemplo de aplicacion Single Page</title>
+    <style>
+        .seccion{display: none;}
+        .activa{display: block;}
+    </style>
+    
+</head>
+
+
+<body>
+
+    <h1>Mi aplicación</h1>
+    <div id="login" class="seccion activa">
+        <h2>Login</h2>
+       <div>Usuario: <input id="usuario" /></div> 
+       <div>Contraseña: <input /></div>
+       <button onclick="entrar()">Entrar</button> 
+    </div>
+    <div id="menu-principal" class="seccion">
+        <h2>Menu principal</h2>
+        <button onclick="datosUsuario()"> Datos de usuario</button>
+        <button onclick="salir()"> Salir </button>
+    </div>
+    <div id="datos-usuarios" class="seccion">
+        <h2>Datos del usuario</h2>
+        <button onclick="cambiarSeccion('menu-principal')"> Datos de usuario</button>
+        <button onclick="salir()"> Salir </button>
+    </div>
+
+
+<script>
+    var seccionActual = "login";
+    function cambiarSeccion(seccion){
+    document.getElementById(seccionActual).classList.remove("activa");
+    document.getElementById(seccion).classList.add("activa");
+    seccionActual=seccion;
+    }
+
+
+
+    function entrar(){
+        var usuario = document.getElementById("usuario").value;
+    //resto de variables y comprobación. Si todo es correcto...
+    cambiarSeccion("menu-principal");
+    }
+
+
+    function datosUsuario(){
+        var usuario = document.getElementById("usuario").value;
+        //...
+    }
+
+    function salir(){
+        cambiarSeccion("login");
+   
+    }
+
+
+</script>
+
+
+</body>
+
+</html>

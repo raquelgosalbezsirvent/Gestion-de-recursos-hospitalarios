@@ -1,9 +1,3 @@
-// rest.get(url, callback)
-// rest.post(url, body, callback)
-// rest.put(url, body, callback)
-// rest.delete(url, callback)
-// function callback(estado, respuesta) {...}
-
 function actualizarHospitales() { // actualiza la lista de hospitales
     rest.get("/api/hospitales", function (estado, respuesta) { //primer paso
         console.log("Estado:", estado, "Hospitales:", respuesta); //tercer paso
@@ -19,19 +13,19 @@ function actualizarHospitales() { // actualiza la lista de hospitales
     });
 }
 
-function nuevoHospital() {
-    var hospital = { //primer paso
-        nombre: document.getElementById("nombre").value,
-        provincia: document.getElementById("provincia").value
+function login() {
+    var usuario = { //primer paso
+        usuario: document.getElementById("usuario").value,
+        contrasenya: document.getElementById("contrasenya").value
     };
     console.log(hospital);
-    rest.post("/api/hospitales", hospital, function (estado, respuesta) { //segundo paso
+    rest.post("/api/gestores/login", usuario, function (estado, respuesta) {
     console.log(respuesta)
         if (estado == 201) {
             console.log("traza0")
             actualizarHospitales();
         } else {
-            alert("Error introduciendo nuevo hospital");
+            alert("Error introduciendo nuevo usuario");
         }
     });
 }
