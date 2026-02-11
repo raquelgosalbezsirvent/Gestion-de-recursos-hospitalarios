@@ -45,7 +45,7 @@ var modelos = [
 
 var recursos = [
   { id: 1, modelo: 1, ubicacion: 4, numero_serie: "TF-T1-0001", estado: 0 },
-  { id: 2, modelo: 1, ubicacion: 2, numero_serie: "TF-T1-0002", estado: 0 },
+  { id: 2, modelo: 2, ubicacion: 2, numero_serie: "TP-T1-0001", estado: 0 },
   { id: 3, modelo: 3, ubicacion: 1, numero_serie: "SC-CL-0100", estado: 0 },
   { id: 4, modelo: 5, ubicacion: 1, numero_serie: "WG-B-2001", estado: 2 },
   { id: 5, modelo: 7, ubicacion: 3, numero_serie: "C-E-7770", estado: 0 },

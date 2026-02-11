@@ -115,18 +115,109 @@ app.get("/api/sanitarios/:id", function (req, res) {
 
 app.get("/api/recursos", function (req, res) {
     //?categoria=idCategoria&modelo=idModelo&ubicacion=idUbicacion&estado=idEst
-    console.log("Query length:", Object.keys(req.query));
+
     var recursos_salida = [];
-    if(req.query.categoria == undefined && req.query.modelo == undefined && req.query.ubicacion == undefined && req.query.estado == undefined){
+    var cat = req.query.categoria;
+    var mod = req.query.modelo;
+    var ubi = req.query.ubicacion;
+    var est = req.query.estado;
+
+    if (cat == undefined && mod == undefined && ubi == undefined && est == undefined) {
         recursos_salida = recursos;
+        res.status(200).json(recursos_salida);
+        return;
     }
-    else {
-        for (var i = 0; i < recursos.length; i++) {
-            if (recursos[i].categoria == req.query.categoria && recursos[i].modelo == req.query.modelo && recursos[i].ubicacion == req.query.ubicacion && recursos[i].estado == req.query.estado) {
-                recursos_salida.push(recursos[i]);
-            }
-        }
+
+    for (var i = 0; i < recursos.length; i++) {
+        if (cat != undefined && modelos[recursos[i].modelo-1].categoria != cat) continue;
+        if (mod != undefined && recursos[i].modelo != mod) continue;
+        if (ubi != undefined && recursos[i].ubicacion != ubi) continue;
+        if (est != undefined && recursos[i].estado != est) continue;
+
+        recursos_salida.push(recursos[i]);
     }
+
     res.status(200).json(recursos_salida);
 });
+
+app.get("/api/recursos/:id", function (req, res) {
+    var idRecurso = parseInt(req.params.id);
+    for (var i = 0; i < recursos.length; i++) {
+        if (recursos[i].id == idRecurso) {
+            res.status(200).json(recursos[i]);
+            return;
+        }
+    }
+    res.status(404).json({mensaje: "Recurso no encontrado"});
+});
+
+app.post("/api/recursos", function (req, res) {
+    var nuevoRecurso = {
+        id: recursos.length + 1,
+        modelo: parseInt(req.body.modelo),
+        ubicacion: parseInt(req.body.ubicacion),
+        numero_serie: req.body.numero_serie,
+        estado: 0
+    };
+
+    recursos.push(nuevoRecurso);
+    res.status(201).json({mensaje: "Recurso creado correctamente"});
+});
+
+app.put("/api/recursos/:id", function (req, res) {
+    var nuevoRecurso = {
+        id: parseInt(req.params.id),
+        modelo: parseInt(req.body.modelo),
+        ubicacion: parseInt(req.body.ubicacion),
+        numero_serie: req.body.numero_serie,
+        estado: parseInt(req.body.estado)
+    };
+
+    for (var i = 0; i < recursos.length; i++) {
+        if (recursos[i].id == nuevoRecurso.id) {
+            recursos[i].modelo = nuevoRecurso.modelo;
+            recursos[i].ubicacion = nuevoRecurso.ubicacion;
+            recursos[i].numero_serie = nuevoRecurso.numero_serie;
+            recursos[i].estado = nuevoRecurso.estado;
+            res.status(200).json({mensaje: "Recurso actualizado correctamente"});
+            return;
+        }
+    }
+    res.status(404).json({mensaje: "Recurso no encontrado"});
+});
+
+app.delete("/api/recursos/:id", function (req, res) {
+    var idRecurso = parseInt(req.params.id);
+    for (var i = 0; i < recursos.length; i++) {
+        if (recursos[i].id == idRecurso) {
+            recursos.splice(i, 1);
+            res.status(200).json({mensaje: "Recurso eliminado correctamente"});
+            return;
+        }
+    }
+    res.status(404).json({mensaje: "Recurso no encontrado"});
+});
+
+app.get("/api/recursos/:id/reservas", function (req, res) {
+    var idRecurso = parseInt(req.params.id);
+    var reservas_salida = [];
+    for (var i = 0; i < reservas.length; i++) {
+        if (reservas[i].recurso == idRecurso) {
+            reservas_salida.push(reservas[i]);
+        }
+    }
+    res.status(200).json(reservas_salida);
+});
+
+app.get("/api/recursos/:id/resenyas", function (req, res) {
+    var idRecurso = parseInt(req.params.id);
+    var resenyas_salida = [];
+    for (var i = 0; i < resenyas.length; i++) {
+        if (resenyas[i].recurso == idRecurso) {
+            resenyas_salida.push(resenyas[i]);
+        }
+    }
+    res.status(200).json(resenyas_salida);
+});
+
 app.listen(3000);
