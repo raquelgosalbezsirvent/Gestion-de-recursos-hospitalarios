@@ -31,7 +31,7 @@
 		function end() {
 			debug("<<<", xhr.status, xhr.response);
 			var response = xhr.response;
-			if (xhr.status >= 200 && xhr.status < 300 && response) response = JSON.parse(response);
+			if (xhr.status >= 200 && xhr.status < 800 && response) response = JSON.parse(response);
 			if (async) {
 				callback(xhr.status, response);
 			} else {

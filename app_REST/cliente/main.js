@@ -1,3 +1,76 @@
+var seccionActual = "login";
+var id_gestor = null;
+
+function cambiarSeccion(seccion){
+document.getElementById(seccionActual).classList.remove("activa");
+document.getElementById(seccionActual).classList.add("seccion");
+
+document.getElementById(seccion).classList.remove("seccion");
+document.getElementById(seccion).classList.add("activa");
+
+seccionActual=seccion;
+}
+
+
+
+function entrar(){
+    login = {
+        usuario: document.getElementById("usuario-login").value,
+        contrasenya: document.getElementById("contrasenya-login").value
+    }
+
+    rest.post("/api/gestores/login", login, function (estado, respuesta) {
+        if (estado == 201) {
+            cambiarSeccion("menu-principal");
+            id_gestor = respuesta;
+        }
+        else if (estado == 403) {
+            alert(respuesta.mensaje);
+        }
+        else {
+            alert("Error desconocido");
+        }
+    });
+}
+
+function registrarse(){
+    cambiarSeccion("datos-usuarios");
+}
+
+function registrarUsuario(){
+    nuevoUsuario = {
+        nombre: document.getElementById("nombre-registro").value,
+        apellidos: document.getElementById("apellidos-registro").value,
+        usuario: document.getElementById("usuario-registro").value,
+        contrasenya: document.getElementById("contrasenya-registro").value
+    }
+
+    rest.post("/api/gestores", nuevoUsuario, function (estado, respuesta) {
+        if (estado == 201) {
+            alert(respuesta.mensaje);
+            cambiarSeccion("menu-principal");
+        }
+        else if (estado == 409) {
+            alert(respuesta.mensaje);
+        }
+        else {
+            alert("Error desconocido");
+        }
+    });
+}
+
+function datosUsuario(){
+    var usuario = document.getElementById("usuario").value;
+    //...
+}
+
+function salir(){
+    cambiarSeccion("login");
+
+}
+
+
+/*
 function actualizarHospitales() { // actualiza la lista de hospitales
     rest.get("/api/hospitales", function (estado, respuesta) { //primer paso
         console.log("Estado:", estado, "Hospitales:", respuesta); //tercer paso
@@ -41,3 +114,4 @@ function eliminarHospital(idHospital) {
 }
 
 actualizarHospitales();
+*/
