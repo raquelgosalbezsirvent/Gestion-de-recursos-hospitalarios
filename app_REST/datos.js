@@ -7,7 +7,7 @@ var sanitarios = [
 var gestores = [
   { id: 1, nombre: "Raúl", apellidos: "Martínez Díaz", usuario: "rmartinez", password: "raul123" },
   { id: 2, nombre: "Elena", apellidos: "Serrano Gil", usuario: "eserrano", password: "elena123" },
-  { id: 3, nombre: "admin", apellidos: "Raquel", usuario: "admin", password: "123" }
+  { id: 3, nombre: "Raquel", apellidos: "Gosálbez Sirvent", usuario: "admin", password: "123" }
 ];
 
 var ubicaciones = [

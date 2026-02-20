@@ -5,8 +5,8 @@
     <meta charset="utf8">
     <title>Ejemplo de aplicacion Single Page</title>
     <style>
-        .seccion{display: none;}
-        .activa{display: block;}
+        .ocultar{display: none;}
+        .mostrar{display: block;}
     </style>
 </head>
 
@@ -14,25 +14,103 @@
 <body>
 
     <h1>Aplicación Gestor</h1>
-    <div id="login" class="activa">
+
+    <div id="login" class="mostrar">
         <h2>Acceso</h2>
        <div>Usuario: <input id="usuario-login" /></div> 
-       <div>Contraseña: <input id="contrasenya-login" type="password"/></div>
+       <div>Contraseña: <input id="password-login" type="password"/></div>
        <button onclick="entrar()">Entrar</button> 
-       <button onclick="registrarse()">Registrarse</button>
+       <button onclick="registro_usuario()">Registrarse</button>
     </div>
-    <div id="menu-principal" class="seccion">
-        <h2>Menu principal</h2>
-        <button onclick="datosUsuario()"> Datos de usuario</button>
-        <button onclick="salir()"> Salir </button>
+
+    <div id="menu-principal" class="ocultar">
+        <h2>Inicio</h2>
+        <div id="bienvenida"></div>
+        <button onclick="edicion_usuario()">Editar datos</button>
+
+        <h3>Búsqueda de recursos</h3>
+        <div>
+            <label for="categoria-filtro">Categoría:</label>
+            <select id="categoria-filtro" onclick="filtrarModelo()">
+            </select>
+        </div>
+        <div>
+            <label for="modelo-filtro">Modelo:</label>
+            <select id="modelo-filtro">
+            </select>
+        </div>
+        <div>
+            <label for="ubicacion-filtro">Ubicación:</label>
+            <select id="ubicacion-filtro">
+            </select>
+        </div>
+        <div>
+            <label for="estado-filtro">Estado:</label>
+            <select id="estado-filtro">
+            </select>
+        </div>
+        <div>
+            <button onclick="actualizarTabla()">Buscar</button>
+        </div>
+
+        <h3>Recursos</h3>
+        <div id="contenedor-tabla-recursos">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nº Serie</th>
+                        <th>Categoría</th>
+                        <th>Modelo</th>
+                        <th>Ubicación</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-recursos">
+                </tbody>
+            </table>
+        </div>
+        <button onclick="nuevoRecurso()">Añadir recurso</button>
+        <button onclick="salir()">Salir</button>
     </div>
-    <div id="datos-usuarios" class="seccion">
+
+    <div id="datos-usuarios" class="ocultar">
         <h2>Datos del usuario</h2>
         <div>Nombre: <input id="nombre-registro" /></div>
         <div>Apellidos: <input id="apellidos-registro"/></div>
         <div>Usuario: <input id="usuario-registro"/></div>
-        <div>Contraseña: <input id="contrasenya-registro" type="password"/></div>
-        <button onclick="registrarUsuario()">Registrarse</button>
+        <div>Contraseña: <input id="password-registro" type="password"/></div>
+        <button onclick="" id="boton-datos-usuario"></button> <!--Depende de si es registro o edicion-->
+        <button onclick="salir()"> Salir </button>
+    </div>
+
+    <div id="ficha-recurso" class="ocultar">
+        <h2>Nuevo recurso</h2>
+
+        <div>
+            <label for="categoria-ficha-recurso">Categoría:</label>
+            <select id="categoria-ficha-recurso" onclick="filtrarModelo()">
+            </select>
+        </div>
+        <div>
+            <label for="modelo-ficha-recurso">Modelo:</label>
+            <select id="modelo-ficha-recurso">
+            </select>
+        </div>
+        <div>
+            Nº Serie: <input id="numero-serie-ficha-recurso"/>
+        </div>
+        <div>
+            <label for="ubicacion-ficha-recurso">Ubicación:</label>
+            <select id="ubicacion-ficha-recurso">
+            </select>
+        </div>
+        <div>
+            <label for="estado-ficha-recurso">Estado:</label>
+            <select id="estado-ficha-recurso">
+            </select>
+        </div>
+        <button onclick="" id="boton-ficha-recurso"></button> <!--Depende de si es nuevo o edicion-->
         <button onclick="salir()"> Salir </button>
     </div>
         

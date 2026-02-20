@@ -32,7 +32,7 @@ app.get("/api/modelos", function (req, res) {
 
 app.post("/api/gestores/login", function (req, res) {
     var usuario = req.body.usuario;
-    var password = req.body.contrasenya;
+    var password = req.body.password;
 
     for (var i = 0; i < gestores.length; i++) {
         if (gestores[i].usuario == usuario && gestores[i].password == password) {
@@ -49,7 +49,7 @@ app.post("/api/gestores", function (req, res) {
         nombre: req.body.nombre,
         apellidos: req.body.apellidos,
         usuario: req.body.usuario,
-        password: req.body.contrasenya        
+        password: req.body.password        
     };
 
     for (var i = 0; i < gestores.length; i++) {
@@ -81,7 +81,7 @@ app.put("/api/gestores/:id", function (req, res) {
                 nombre: req.body.nombre,
                 apellidos: req.body.apellidos,
                 usuario: req.body.usuario,
-                password: req.body.contrasenya        
+                password: req.body.password        
             };
             gestores[i] = actGestor;
             res.status(200).json({mensaje: "Gestor actualizado correctamente"});
