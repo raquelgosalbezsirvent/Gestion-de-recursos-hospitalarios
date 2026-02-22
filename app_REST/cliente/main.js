@@ -60,6 +60,8 @@ function registro_usuario() {
     document.getElementById("boton-datos-usuario").onclick = function(){ gestionUsuario('registro'); };
     document.getElementById("boton-datos-usuario").textContent = "Registrar";
 
+    document.getElementById("boton-datos-usuario-cancelar").onclick = function() { cambiarSeccion("login"); };
+
     cambiarSeccion("datos-usuarios");
 }
 
@@ -70,16 +72,18 @@ function edicion_usuario() {
             document.getElementById("apellidos-registro").value = respuesta.apellidos;
             document.getElementById("usuario-registro").value = respuesta.usuario;
             document.getElementById("password-registro").value = respuesta.password;
+
+            document.getElementById("boton-datos-usuario").onclick = function(){ gestionUsuario('edicion'); };
+            document.getElementById("boton-datos-usuario").textContent = "Editar";
+
+            document.getElementById("boton-datos-usuario-cancelar").onclick = function() { cambiarSeccion("menu-principal"); };
+
+            cambiarSeccion("datos-usuarios");
         }
         else if (estado == 404) {
             document.getElementById("nombre-registro").value = respuesta.mensaje;
         }
     })
-
-    document.getElementById("boton-datos-usuario").onclick = function(){ gestionUsuario('edicion'); };
-    document.getElementById("boton-datos-usuario").textContent = "Editar";
-
-    cambiarSeccion("datos-usuarios");
 }
 
 function gestionUsuario(tipo_gestion){
@@ -135,6 +139,9 @@ function actualizarSelect(sufijo){
             if (sufijo == "-filtro") {
                 selectCategorias.innerHTML = '<option value="default">Todos</option>';
             }
+            else if (sufijo == "-ficha-recurso") {
+                selectCategorias.innerHTML = '<option value="default"> </option>';
+            }
             for (var i = 0; i < categorias.length; i++) {
                 selectCategorias.innerHTML += '<option value="' + categorias[i].id + '">' + categorias[i].nombre + '</option>';
             }
@@ -149,6 +156,9 @@ function actualizarSelect(sufijo){
             if (sufijo == "-filtro") {
                 selectModelos.innerHTML = '<option value="default">Todos</option>';
             }
+            else if (sufijo == "-ficha-recurso") {
+                selectModelos.innerHTML = '<option value="default"> </option>';
+            }
             for (var i = 0; i < modelos.length; i++) {
                 selectModelos.innerHTML += '<option value="' + modelos[i].id + '">' + modelos[i].nombre + '</option>';
             }
@@ -162,6 +172,9 @@ function actualizarSelect(sufijo){
             selectUbicaciones.innerHTML = ""; // Limpiar el select antes de añadir nuevas opciones
             if (sufijo == "-filtro") {
                 selectUbicaciones.innerHTML = '<option value="default">Todos</option>';
+            }
+            else if (sufijo == "-ficha-recurso") {
+                selectUbicaciones.innerHTML = '<option value="default"> </option>';
             }
             for (var i = 0; i < ubicaciones.length; i++) {
                 selectUbicaciones.innerHTML += '<option value="' + ubicaciones[i].id + '">' + ubicaciones[i].nombre + '</option>';
@@ -185,15 +198,20 @@ function actualizarSelect(sufijo){
     }
 }
 
-function filtrarModelo() {
+function filtrarModelo(sufijo, id_seleccion) {
 
-    var filtroCategoria = document.getElementById("categoria-filtro").value;
+    var filtroCategoria = document.getElementById("categoria"+sufijo).value;
 
     rest.get("/api/modelos", function(estado, respuesta) {
         if (estado == 200) {
             var modelos = respuesta;
-            var selectModelos = document.getElementById("modelo-filtro");
-            selectModelos.innerHTML = '<option value="default">Todos</option>';
+            var selectModelos = document.getElementById("modelo"+sufijo);
+            if (sufijo == "-filtro") {
+                selectModelos.innerHTML = '<option value="default">Todos</option>';
+            }
+            else if (sufijo == "-ficha-recurso") {
+                selectModelos.innerHTML = '<option value="default"> </option>';
+            }
 
             if (filtroCategoria == "default") {
                 for (var i = 0; i < modelos.length; i++) {
@@ -206,6 +224,10 @@ function filtrarModelo() {
                         selectModelos.innerHTML += '<option value="' + modelos[i].id + '">' + modelos[i].nombre + '</option>';
                     }
                 }
+            }
+
+            if (id_seleccion != undefined) {
+                document.getElementById("modelo"+sufijo).value = id_seleccion;
             }
         }
     })
@@ -318,6 +340,37 @@ function actualizarTabla() {
 }
 
 function abrirRecurso(id) {
+    actualizarSelect("-ficha-recurso");
+    rest.get("/api/recursos/" + id, function(estado, respuesta) {
+        if (estado == 200) {
+            var recurso = respuesta;
+            rest.get("/api/modelos", function(estado, respuesta) {
+                if (estado == 200) {
+                    var modelos = respuesta;
+
+                    for (var i = 0; i < modelos.length; i++) {
+                        if (modelos[i].id == recurso.modelo) {
+                            document.getElementById("categoria-ficha-recurso").value = modelos[i].categoria;
+                            break;
+                        }
+                    }
+                    filtrarModelo("-ficha-recurso", recurso.modelo);
+                    document.getElementById("numero-serie-ficha-recurso").value = recurso.numero_serie;
+                    document.getElementById("ubicacion-ficha-recurso").value = recurso.ubicacion;
+                    document.getElementById("estado-ficha-recurso").value = recurso.estado;
+                    document.getElementById("boton-ficha-recurso").onclick = function() { editarRecurso(id); };
+                    document.getElementById("boton-ficha-recurso").textContent = "Editar Recurso";
+                    cambiarSeccion("ficha-recurso");
+                }
+                else {
+                    alert("Error al cargar los modelos");
+                }
+            });
+        }
+        else {
+            alert("Error al cargar el recurso");
+        }
+    });
 }
 
 function eliminarRecurso(id) {
@@ -337,17 +390,68 @@ function eliminarRecurso(id) {
 }
 
 function nuevoRecurso() {
-    cambiarSeccion("ficha-recurso");
     actualizarSelect("-ficha-recurso");
-    
+    document.getElementById("numero-serie-ficha-recurso").value = "";
+    document.getElementById("boton-ficha-recurso").onclick = function() { crearRecurso(); };
+    document.getElementById("boton-ficha-recurso").textContent = "Registrar Recurso";
+    cambiarSeccion("ficha-recurso");
 }
 
+function crearRecurso() {
+    var nuevoRecurso = {
+        categoria: parseInt(document.getElementById("categoria-ficha-recurso").value),
+        modelo: parseInt(document.getElementById("modelo-ficha-recurso").value),
+        numero_serie: document.getElementById("numero-serie-ficha-recurso").value,
+        ubicacion: parseInt(document.getElementById("ubicacion-ficha-recurso").value),
+        estado: parseInt(document.getElementById("estado-ficha-recurso").value)
+    };
 
+    if (nuevoRecurso.categoria == "default" || nuevoRecurso.modelo == "default" || nuevoRecurso.ubicacion == "default" || nuevoRecurso.numero_serie == "") {
+        alert("No se puede registrar el recurso. Rellene todos los campos.");
+        return;
+    }
+
+    rest.post("/api/recursos", nuevoRecurso, function(estado, respuesta) {
+        if (estado == 201) {
+            alert(respuesta.mensaje);
+            actualizarTabla();
+            abrirRecurso(respuesta.id);
+        }
+        else {
+            alert("Error desconocido");
+        }
+    });
+}
+
+function editarRecurso(id) {
+    var recursoEditado = {
+        id: id,
+        categoria: parseInt(document.getElementById("categoria-ficha-recurso").value),
+        modelo: parseInt(document.getElementById("modelo-ficha-recurso").value),
+        numero_serie: document.getElementById("numero-serie-ficha-recurso").value,
+        ubicacion: parseInt(document.getElementById("ubicacion-ficha-recurso").value),
+        estado: parseInt(document.getElementById("estado-ficha-recurso").value)
+    };
+
+    rest.put("/api/recursos/" + id, recursoEditado, function(estado, respuesta) {
+        if (estado == 200) {
+            alert(respuesta.mensaje);
+            actualizarTabla();
+            abrirRecurso(id);
+        }
+        else if (estado == 404) {
+            alert(respuesta.mensaje);
+        }
+        else {
+            alert("Error desconocido");
+        }
+    });
+}
 
 function salir(){
-    console.log("salir")
     document.getElementById("usuario-login").value = "";
     document.getElementById("password-login").value = "";
+    document.getElementById("tabla-recursos").innerHTML = "";
     cambiarSeccion("login");
 
 }

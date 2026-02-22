@@ -31,7 +31,7 @@
         <h3>Búsqueda de recursos</h3>
         <div>
             <label for="categoria-filtro">Categoría:</label>
-            <select id="categoria-filtro" onclick="filtrarModelo()">
+            <select id="categoria-filtro" onclick="filtrarModelo('-filtro')">
             </select>
         </div>
         <div>
@@ -70,8 +70,12 @@
                 </tbody>
             </table>
         </div>
-        <button onclick="nuevoRecurso()">Añadir recurso</button>
-        <button onclick="salir()">Salir</button>
+        <div>
+            <button onclick="nuevoRecurso()">Añadir recurso</button>
+        </div>
+        <div>
+            <button onclick="salir()">Salir</button>
+        </div>
     </div>
 
     <div id="datos-usuarios" class="ocultar">
@@ -81,15 +85,15 @@
         <div>Usuario: <input id="usuario-registro"/></div>
         <div>Contraseña: <input id="password-registro" type="password"/></div>
         <button onclick="" id="boton-datos-usuario"></button> <!--Depende de si es registro o edicion-->
-        <button onclick="salir()"> Salir </button>
+        <button onclick="" id="boton-datos-usuario-cancelar">Cancelar</button> <!--En edicion vuelve a menu, en registro vuelve a login-->
     </div>
 
     <div id="ficha-recurso" class="ocultar">
-        <h2>Nuevo recurso</h2>
+        <h2>Datos Recurso</h2>
 
         <div>
             <label for="categoria-ficha-recurso">Categoría:</label>
-            <select id="categoria-ficha-recurso" onclick="filtrarModelo()">
+            <select id="categoria-ficha-recurso" onclick="filtrarModelo('-ficha-recurso')">
             </select>
         </div>
         <div>
@@ -110,8 +114,13 @@
             <select id="estado-ficha-recurso">
             </select>
         </div>
-        <button onclick="" id="boton-ficha-recurso"></button> <!--Depende de si es nuevo o edicion-->
-        <button onclick="salir()"> Salir </button>
+        <div>
+            <button onclick="" id="boton-ficha-recurso"></button> <!--Depende de si es nuevo o edicion-->
+        </div>
+        <div>
+            <button onclick="cambiarSeccion('menu-principal')"> Volver al listado </button>
+        </div>
+            
     </div>
         
 <script src="rest.js"></script>
