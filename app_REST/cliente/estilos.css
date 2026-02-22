@@ -217,3 +217,9 @@ td:last-child button:last-child:hover{
 /* ====== VISIBILIDAD ====== */
 .ocultar{ display: none; }
 .mostrar{ display: block; }
+
+/* Colores reservas (según enunciado) */
+.reserva-finalizada { background: #ffffff; }  /* blanco */
+.reserva-en-uso-ok  { background: #cfe8ff; }  /* azul */
+.reserva-en-uso-mal { background: #ffc7c7; }  /* rojo */
+.reserva-pendiente  { background: #c8f7c8; }  /* verde */

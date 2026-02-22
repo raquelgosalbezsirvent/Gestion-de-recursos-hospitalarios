@@ -11,6 +11,12 @@ var recursos=datosServidor.rec
 var reservas=datosServidor.resv
 var resenyas=datosServidor.resny
 
+var ids_gestores = gestores.length + 1;
+var ids_sanitarios = sanitarios.length + 1;
+var ids_recursos = recursos.length + 1;
+var ids_reservas = reservas.length + 1;
+var ids_resenyas = resenyas.length + 1;
+
 // siempre que el usuario escriba lo que ponga en appCliente, el servidor me va a devolver el contenido estatico (html, fotos, etc.) de lo que ponga en la carpeta cliente. si hay varios, devuelve index.html
 app.use("/appCliente", express.static("cliente")); 
 app.use(express.json()); 
@@ -45,7 +51,7 @@ app.post("/api/gestores/login", function (req, res) {
 
 app.post("/api/gestores", function (req, res) {
     var nuevoGestor = {
-        id: gestores.length + 1,
+        id: ids_gestores++,
         nombre: req.body.nombre,
         apellidos: req.body.apellidos,
         usuario: req.body.usuario,
@@ -95,7 +101,9 @@ app.get("/api/gestores/:id", function (req, res) {
     var idGestor = parseInt(req.params.id);
     for (var i = 0; i < gestores.length; i++) {
         if (gestores[i].id == idGestor) {
-            res.status(200).json(gestores[i]);
+            var gestor = Object.assign({}, gestores[i]);
+            delete gestor.password;
+            res.status(200).json(gestor);
             return;
         }
     }
@@ -106,7 +114,9 @@ app.get("/api/sanitarios/:id", function (req, res) {
     var idSanitario = parseInt(req.params.id);
     for (var i = 0; i < sanitarios.length; i++) {
         if (sanitarios[i].id == idSanitario) {
-            res.status(200).json(sanitarios[i]);
+            var sanitario = Object.assign({}, sanitarios[i]);
+            delete sanitario.password;
+            res.status(200).json(sanitario);
             return;
         }
     }
@@ -129,12 +139,18 @@ app.get("/api/recursos", function (req, res) {
     }
 
     for (var i = 0; i < recursos.length; i++) {
-        if (cat != undefined && modelos[recursos[i].modelo-1].categoria != cat) continue;
-        if (mod != undefined && recursos[i].modelo != mod) continue;
-        if (ubi != undefined && recursos[i].ubicacion != ubi) continue;
-        if (est != undefined && recursos[i].estado != est) continue;
+        var recurso = recursos[i];
 
-        recursos_salida.push(recursos[i]);
+        // Buscar modelo REAL por id
+        var modelo = modelos.find(function(m){
+            return m.id === recurso.modelo;
+        });
+        if (cat != undefined && modelo.categoria != cat) continue;
+        if (mod != undefined && recurso.modelo != mod) continue;
+        if (ubi != undefined && recurso.ubicacion != ubi) continue;
+        if (est != undefined && recurso.estado != est) continue;
+
+        recursos_salida.push(recurso);
     }
 
     res.status(200).json(recursos_salida);
@@ -153,11 +169,11 @@ app.get("/api/recursos/:id", function (req, res) {
 
 app.post("/api/recursos", function (req, res) {
     var nuevoRecurso = {
-        id: recursos.length + 1,
+        id: ids_recursos++,
         modelo: parseInt(req.body.modelo),
         ubicacion: parseInt(req.body.ubicacion),
         numero_serie: req.body.numero_serie,
-        estado: 0
+        estado: parseInt(req.body.estado)
     };
 
     recursos.push(nuevoRecurso);
@@ -188,14 +204,37 @@ app.put("/api/recursos/:id", function (req, res) {
 
 app.delete("/api/recursos/:id", function (req, res) {
     var idRecurso = parseInt(req.params.id);
+    var encontrado = false;
+
     for (var i = 0; i < recursos.length; i++) {
         if (recursos[i].id == idRecurso) {
             recursos.splice(i, 1);
-            res.status(200).json({mensaje: "Recurso eliminado correctamente"});
-            return;
+            encontrado = true;
+            break;
         }
     }
-    res.status(404).json({mensaje: "Recurso no encontrado"});
+    
+    if (encontrado) {
+        for (var j = 0; j < reservas.length; j++) {
+            if (reservas[j].recurso == idRecurso) {
+                reservas.splice(j, 1);
+                j--;
+            }
+        }
+
+        for (var k = 0; k < resenyas.length; k++) {
+            if (resenyas[k].recurso == idRecurso) {
+                resenyas.splice(k, 1);
+                k--;
+            }
+        }
+
+        res.status(200).json({mensaje: "Recurso eliminado correctamente"});
+        return;
+    }
+    else {
+        res.status(404).json({mensaje: "Recurso no encontrado"});
+    }
 });
 
 app.get("/api/recursos/:id/reservas", function (req, res) {

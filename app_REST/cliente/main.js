@@ -71,7 +71,7 @@ function edicion_usuario() {
             document.getElementById("nombre-registro").value = respuesta.nombre;
             document.getElementById("apellidos-registro").value = respuesta.apellidos;
             document.getElementById("usuario-registro").value = respuesta.usuario;
-            document.getElementById("password-registro").value = respuesta.password;
+            document.getElementById("password-registro").value = "";
 
             document.getElementById("boton-datos-usuario").onclick = function(){ gestionUsuario('edicion'); };
             document.getElementById("boton-datos-usuario").textContent = "Editar";
@@ -126,8 +126,6 @@ function gestionUsuario(tipo_gestion){
         })
         
     }
-
-    cambiarSeccion("datos-usuarios");
 }
 
 function actualizarSelect(sufijo){
@@ -352,7 +350,7 @@ function abrirRecurso(id) {
                 if (estado == 200) {
                     var modelos = respuesta;
 
-                    for (var i = 0; i < modelos.length; i++) {
+                    for (let i = 0; i < modelos.length; i++) {
                         if (modelos[i].id == recurso.modelo) {
                             document.getElementById("categoria-ficha-recurso").value = modelos[i].categoria;
                             break;
@@ -370,8 +368,18 @@ function abrirRecurso(id) {
                         if (estado == 200) {
                             var reservas = respuesta;
                             var tablaReservas = document.getElementById("tabla-reservas-ficha-recurso");
-                            for (var i = 0; i < reservas.length; i++) {
-                                tablaReservas.innerHTML += "<tr><td>" + (reservas[i].sanitario || "") + "</td><td>" + (reservas[i].horas_estimadas || "") + "</td><td>" + formatearFecha(reservas[i].fecha_peticion || "") + "</td><td>" + formatearFecha(reservas[i].fecha_inicio || "") + "</td><td>" + formatearFecha(reservas[i].fecha_fin || "") + "</td></tr>";
+                            
+                            for (let i = 0; i < reservas.length; i++) {
+                                rest.get("/api/sanitarios/" + reservas[i].sanitario, function(estado, respuesta) {
+                                    if (estado == 200) {
+                                        var sanitario = respuesta;
+                                        var clase = claseReserva(reservas[i]);
+                                        tablaReservas.innerHTML += "<tr class='" + clase + "'><td>" + (sanitario.nombre || "") + " " + (sanitario.apellidos || "") + "</td><td>" + (reservas[i].horas_estimadas || "") + "</td><td>" + formatearFecha(reservas[i].fecha_peticion || "") + "</td><td>" + formatearFecha(reservas[i].fecha_inicio || "") + "</td><td>" + formatearFecha(reservas[i].fecha_fin || "") + "</td></tr>";
+                                    }
+                                    else {
+                                        tablaReservas.innerHTML += "<tr><td>Sanitario desconocido</td><td>" + (reservas[i].horas_estimadas || "") + "</td><td>" + formatearFecha(reservas[i].fecha_peticion || "") + "</td><td>" + formatearFecha(reservas[i].fecha_inicio || "") + "</td><td>" + formatearFecha(reservas[i].fecha_fin || "") + "</td></tr>";
+                                    }
+                                });
                             }
 
 
@@ -379,11 +387,18 @@ function abrirRecurso(id) {
                                 if (estado == 200) {
                                     var resenyas = respuesta;
                                     var tablaResenyas = document.getElementById("tabla-resenyas-ficha-recurso");
-                                    for (var i = 0; i < resenyas.length; i++) {
-                                        tablaResenyas.innerHTML += "<tr><td>" + formatearFecha(resenyas[i].fecha || "") + "</td><td>" + (resenyas[i].sanitario || "") + "</td><td>" + (resenyas[i].valor || "") + "</td><td>" + (resenyas[i].descripcion || "") + "</td></tr>";
-                                    }
-
                                     cambiarSeccion("ficha-recurso");
+                                    for (let i = 0; i < resenyas.length; i++) {
+                                        rest.get("/api/sanitarios/" + resenyas[i].sanitario, function(estado, respuesta) {
+                                            if (estado == 200) {
+                                                var sanitario = respuesta;
+                                                tablaResenyas.innerHTML += "<tr><td>" + formatearFecha(resenyas[i].fecha || "") + "</td><td>" + (sanitario.nombre || "") + " " + (sanitario.apellidos || "") + "</td><td>" + (resenyas[i].valor || "") + "</td><td>" + (resenyas[i].descripcion || "") + "</td></tr>";
+                                            }
+                                            else {
+                                                tablaResenyas.innerHTML += "<tr><td>" + formatearFecha(resenyas[i].fecha || "") + "</td><td>Sanitario desconocido</td><td>" + (resenyas[i].valor || "") + "</td><td>" + (resenyas[i].descripcion || "") + "</td></tr>";
+                                            }
+                                        });
+                                    }
                                 }
                                 else {
                                     alert("Error al cargar las reseñas del recurso");
@@ -441,7 +456,7 @@ function crearRecurso() {
         estado: parseInt(document.getElementById("estado-ficha-recurso").value)
     };
 
-    if (nuevoRecurso.categoria == "default" || nuevoRecurso.modelo == "default" || nuevoRecurso.ubicacion == "default" || nuevoRecurso.numero_serie == "") {
+    if (isNaN(nuevoRecurso.categoria) || isNaN(nuevoRecurso.modelo) || isNaN(nuevoRecurso.ubicacion) || nuevoRecurso.numero_serie == "") {
         alert("No se puede registrar el recurso. Rellene todos los campos.");
         return;
     }
@@ -489,6 +504,34 @@ function salir(){
     document.getElementById("tabla-recursos").innerHTML = "";
     cambiarSeccion("login");
 
+}
+
+function claseReserva(reserva) {
+  var horas = Number(reserva.horas_estimadas);
+
+  var inicio = reserva.fecha_inicio ? new Date(reserva.fecha_inicio) : null;
+  var fin    = reserva.fecha_fin    ? new Date(reserva.fecha_fin)    : null;
+
+  // Finalizada (blanco): fin válida
+  if (fin && !isNaN(fin.getTime())) {
+    return "reserva-finalizada";
+  }
+
+  // Pendiente (verde): inicio no existe o no es válida
+  if (!inicio || isNaN(inicio.getTime())) {
+    return "reserva-pendiente";
+  }
+
+  // En uso: inicio válida y no fin
+  var ahora = new Date();
+  var horasTrans = (ahora.getTime() - inicio.getTime()) / (1000 * 60 * 60);
+
+  // Si horas_estimadas no es número válido -> azul
+  if (!isFinite(horas)) {
+    return "reserva-en-uso-ok";
+  }
+
+  return (horasTrans <= horas) ? "reserva-en-uso-ok" : "reserva-en-uso-mal";
 }
 
 function formatearFecha(fecha) {

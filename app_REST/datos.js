@@ -62,7 +62,7 @@ var recursos = [
 
 
 var reservas = [
-  { id: 1,  recurso: 2, sanitario: 1, horas_estimadas: 4, fecha_peticion: new Date("2026-02-09T09:10:00"), fecha_inicio: new Date("2026-02-09T10:00:00"), fecha_fin: null},
+  { id: 1,  recurso: 2, sanitario: 1, horas_estimadas: 4, fecha_peticion: new Date("2026-02-09T09:10:00"), fecha_inicio: new Date("2026-02-22T23:00:00"), fecha_fin: null},
   { id: 2,  recurso: 5, sanitario: 2, horas_estimadas: 2, fecha_peticion: new Date("2026-02-07T08:30:00"), fecha_inicio: new Date("2026-02-07T09:00:00"),fecha_fin: null},
   { id: 3,  recurso: 5, sanitario: 3, horas_estimadas: 6, fecha_peticion: new Date("2026-02-08T12:15:00"), fecha_inicio: null,  fecha_fin: null},
   { id: 4,  recurso: 1, sanitario: 3, horas_estimadas: 3, fecha_peticion: new Date("2026-02-01T09:00:00"), fecha_inicio: new Date("2026-02-01T10:00:00"), fecha_fin: new Date("2026-02-01T12:30:00")},
