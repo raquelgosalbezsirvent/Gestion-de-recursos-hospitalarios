@@ -341,6 +341,10 @@ function actualizarTabla() {
 
 function abrirRecurso(id) {
     actualizarSelect("-ficha-recurso");
+
+    document.getElementById("tabla-reservas-ficha-recurso").innerHTML = "";
+    document.getElementById("tabla-resenyas-ficha-recurso").innerHTML = "";
+
     rest.get("/api/recursos/" + id, function(estado, respuesta) {
         if (estado == 200) {
             var recurso = respuesta;
@@ -359,8 +363,37 @@ function abrirRecurso(id) {
                     document.getElementById("ubicacion-ficha-recurso").value = recurso.ubicacion;
                     document.getElementById("estado-ficha-recurso").value = recurso.estado;
                     document.getElementById("boton-ficha-recurso").onclick = function() { editarRecurso(id); };
-                    document.getElementById("boton-ficha-recurso").textContent = "Editar Recurso";
-                    cambiarSeccion("ficha-recurso");
+                    document.getElementById("boton-ficha-recurso").textContent = "Editar recurso";
+                    
+
+                    rest.get("/api/recursos/" + id + "/reservas", function(estado, respuesta) {
+                        if (estado == 200) {
+                            var reservas = respuesta;
+                            var tablaReservas = document.getElementById("tabla-reservas-ficha-recurso");
+                            for (var i = 0; i < reservas.length; i++) {
+                                tablaReservas.innerHTML += "<tr><td>" + (reservas[i].sanitario || "") + "</td><td>" + (reservas[i].horas_estimadas || "") + "</td><td>" + formatearFecha(reservas[i].fecha_peticion || "") + "</td><td>" + formatearFecha(reservas[i].fecha_inicio || "") + "</td><td>" + formatearFecha(reservas[i].fecha_fin || "") + "</td></tr>";
+                            }
+
+
+                            rest.get("/api/recursos/" + id + "/resenyas", function(estado, respuesta) {
+                                if (estado == 200) {
+                                    var resenyas = respuesta;
+                                    var tablaResenyas = document.getElementById("tabla-resenyas-ficha-recurso");
+                                    for (var i = 0; i < resenyas.length; i++) {
+                                        tablaResenyas.innerHTML += "<tr><td>" + formatearFecha(resenyas[i].fecha || "") + "</td><td>" + (resenyas[i].sanitario || "") + "</td><td>" + (resenyas[i].valor || "") + "</td><td>" + (resenyas[i].descripcion || "") + "</td></tr>";
+                                    }
+
+                                    cambiarSeccion("ficha-recurso");
+                                }
+                                else {
+                                    alert("Error al cargar las reseñas del recurso");
+                                }
+                            });
+                        }
+                        else {
+                            alert("Error al cargar las reservas del recurso");
+                        }
+                    });
                 }
                 else {
                     alert("Error al cargar los modelos");
@@ -392,8 +425,10 @@ function eliminarRecurso(id) {
 function nuevoRecurso() {
     actualizarSelect("-ficha-recurso");
     document.getElementById("numero-serie-ficha-recurso").value = "";
+    document.getElementById("tabla-reservas-ficha-recurso").innerHTML = "";
+    document.getElementById("tabla-resenyas-ficha-recurso").innerHTML = "";
     document.getElementById("boton-ficha-recurso").onclick = function() { crearRecurso(); };
-    document.getElementById("boton-ficha-recurso").textContent = "Registrar Recurso";
+    document.getElementById("boton-ficha-recurso").textContent = "Registrar recurso";
     cambiarSeccion("ficha-recurso");
 }
 
@@ -454,4 +489,22 @@ function salir(){
     document.getElementById("tabla-recursos").innerHTML = "";
     cambiarSeccion("login");
 
+}
+
+function formatearFecha(fecha) {
+    if (fecha == "") {
+        return "";
+    }
+
+    var f = new Date(fecha);
+
+    var dia = String(f.getDate()).padStart(2, "0");
+    var mes = String(f.getMonth() + 1).padStart(2, "0");
+    var anyo = String(f.getFullYear()).slice(-2);
+
+    var horas = String(f.getHours()).padStart(2, "0");
+    var minutos = String(f.getMinutes()).padStart(2, "0");
+    var segundos = String(f.getSeconds()).padStart(2, "0");
+
+    return dia + "/" + mes + "/" + anyo + "<br>" + horas + ":" + minutos + ":" + segundos;
 }

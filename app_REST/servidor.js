@@ -161,7 +161,7 @@ app.post("/api/recursos", function (req, res) {
     };
 
     recursos.push(nuevoRecurso);
-    res.status(201).json({mensaje: "Recurso creado correctamente"});
+    res.status(201).json({mensaje: "Recurso creado correctamente", id: nuevoRecurso.id});
 });
 
 app.put("/api/recursos/:id", function (req, res) {
