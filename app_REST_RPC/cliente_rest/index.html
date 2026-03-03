@@ -1,0 +1,161 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf8">
+    <title>Gestión de recursos hospitalarios</title>
+    <link rel="stylesheet" href="estilos.css">
+</head>
+
+
+<body>
+
+    <h1>Aplicación Gestor</h1>
+
+    <div id="login" class="mostrar">
+        <h2>Acceso</h2>
+       <div><label for="usuario-login">Usuario:</label> <input id="usuario-login" /></div> 
+       <div><label for="password-login">Contraseña:</label> <input id="password-login" type="password"/></div>
+       <div class="fila-botones">
+        <button onclick="entrar()">Entrar</button> 
+        <button onclick="registro_usuario()">Registrarse</button>
+        </div>
+    </div>
+
+    <div id="menu-principal" class="ocultar">
+        <h2>Inicio</h2>
+        <div id="bienvenida"></div>
+        <button onclick="edicion_usuario()">Editar datos</button>
+
+        <h3>Búsqueda de recursos</h3>
+        <div>
+            <label for="categoria-filtro">Categoría:</label>
+            <select id="categoria-filtro" onclick="filtrarModelo('-filtro')">
+            </select>
+        </div>
+        <div>
+            <label for="modelo-filtro">Modelo:</label>
+            <select id="modelo-filtro">
+            </select>
+        </div>
+        <div>
+            <label for="ubicacion-filtro">Ubicación:</label>
+            <select id="ubicacion-filtro">
+            </select>
+        </div>
+        <div>
+            <label for="estado-filtro">Estado:</label>
+            <select id="estado-filtro">
+            </select>
+        </div>
+        <div>
+            <button onclick="actualizarTabla()">Buscar</button>
+        </div>
+
+        <h3>Recursos</h3>
+        <div id="contenedor-tabla-recursos">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nº Serie</th>
+                        <th>Categoría</th>
+                        <th>Modelo</th>
+                        <th>Ubicación</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-recursos">
+                </tbody>
+            </table>
+        </div>
+        <div>
+            <button onclick="nuevoRecurso()">Añadir recurso</button>
+        </div>
+        <div>
+            <button onclick="salir()">Salir</button>
+        </div>
+    </div>
+
+    <div id="datos-usuarios" class="ocultar">
+        <h2>Datos del Gestor</h2>
+        <div><label for="nombre-registro">Nombre:</label> <input id="nombre-registro" /></div>
+        <div><label for="apellidos-registro">Apellidos:</label> <input id="apellidos-registro"/></div>
+        <div><label for="usuario-registro">Login:</label> <input id="usuario-registro"/></div>
+        <div><label for="password-registro">Contraseña:</label> <input id="password-registro" type="password"/></div>
+        <button onclick="" id="boton-datos-usuario"></button> <!--Depende de si es registro o edicion-->
+        <button onclick="" id="boton-datos-usuario-cancelar">Cancelar</button> <!--En edicion vuelve a menu, en registro vuelve a login-->
+    </div>
+
+    <div id="ficha-recurso" class="ocultar">
+        <h2>Datos Recurso</h2>
+
+        <div>
+            <label for="categoria-ficha-recurso">Categoría:</label>
+            <select id="categoria-ficha-recurso" onclick="filtrarModelo('-ficha-recurso')">
+            </select>
+        </div>
+        <div>
+            <label for="modelo-ficha-recurso">Modelo:</label>
+            <select id="modelo-ficha-recurso">
+            </select>
+        </div>
+        <div>
+            <label for="numero-serie-ficha-recurso">Nº Serie:</label> <input id="numero-serie-ficha-recurso"/>
+        </div>
+        <div>
+            <label for="ubicacion-ficha-recurso">Ubicación:</label>
+            <select id="ubicacion-ficha-recurso">
+            </select>
+        </div>
+        <div>
+            <label for="estado-ficha-recurso">Estado:</label>
+            <select id="estado-ficha-recurso">
+            </select>
+        </div>
+        <div>
+            <button onclick="" id="boton-ficha-recurso"></button> <!--Depende de si es nuevo o edicion-->
+        </div>
+
+        <h2>Reservas</h2>
+        <div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Sanitario</th>
+                        <th>Horas Estimadas</th>
+                        <th>Fecha Petición</th>
+                        <th>Fecha Inicio</th>
+                        <th>Fecha Fin</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-reservas-ficha-recurso">
+                </tbody>
+            </table>
+        </div>
+
+        <h2>Reseñas</h2>
+        <div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Sanitario</th>
+                        <th>Valoración</th>
+                        <th>Comentario</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-resenyas-ficha-recurso">
+                </tbody>
+            </table>
+        </div>
+        <div>
+            <button onclick="cambiarSeccion('menu-principal')"> Volver al listado </button>
+        </div>
+            
+    </div>
+        
+<script src="rest.js"></script>
+<script src="main.js"></script>
+</body>
+</html>

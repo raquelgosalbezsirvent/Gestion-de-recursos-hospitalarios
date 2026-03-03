@@ -1,0 +1,225 @@
+/* ====== BASE ====== */
+* { box-sizing: border-box; }
+
+body{
+  margin: 0;
+  font-family: "Times New Roman", Times, serif;
+  background: #ffffff;
+  color: #000;
+}
+
+/* ====== CONTENEDOR PRINCIPAL (como en las capturas) ====== */
+h1,
+#login, #menu-principal, #datos-usuarios, #ficha-recurso{
+  width: 90%;
+  margin: 0 auto;
+  border: 2px solid #000;
+  border-top: 0;
+  padding: 10px 14px 14px;
+}
+
+#login,
+#datos-usuarios{
+  text-align: center;
+}
+
+h1{
+  text-align: center;
+  font-size: 36px;
+  font-weight: 700;
+  background: #bfbfbf;
+  border: 2px solid #000;
+  border-bottom: 0;
+  padding: 10px 0 6px;
+}
+
+/* ====== TITULOS Y SEPARADORES ====== */
+h2{
+  margin: 4px 0 10px;
+  font-size: 22px;
+  font-variant: small-caps;
+  letter-spacing: .5px;
+  border-bottom: 1px dotted #777;
+  padding-bottom: 6px;
+}
+
+h3{
+  margin: 14px 0 8px;
+  font-size: 20px;
+  font-weight: 700;
+  border-bottom: 1px dotted #777;
+  padding-bottom: 6px;
+}
+
+/* ====== FORMULARIOS (alineados como en las capturas) ====== */
+/* Para los bloques label */
+label{
+  display: inline-block;
+  text-align: right;
+  width: 100px;
+  color: #1f33cc;          /* azul “link-like” */
+  font-size: 16px;
+}
+
+/* Filas del login y datos-usuarios: centradas y sin huecos raros */
+#login > div,
+#datos-usuarios > div{
+  display: grid;
+  grid-template-columns: max-content max-content; /* nada de 1fr */
+  column-gap: 8px;
+  align-items: center;
+  justify-content: center; /* centra toda la fila */
+  margin: 10px 0;
+  color: #1f33cc;
+  font-size: 18px;
+}
+
+#login div::first-letter,
+#datos-usuarios div::first-letter{}
+
+/* En login/datos-usuario el texto "Usuario:", etc. es texto plano.
+   Le damos estilo similar al azul del label */
+#login div, #datos-usuarios div{
+  color: #1f33cc;
+  font-size: 16px;
+}
+
+/* Inputs/selects estilo “clásico” */
+input, select{
+  font-family: Arial, Helvetica, sans-serif;
+  border: 1px solid #9a9a9a;
+  background: #fff;
+  height: 22px;
+}
+
+input{
+  width: 200px;
+}
+
+select{
+  width: 150px;
+}
+
+/* En ficha recurso el campo Nº Serie es texto + input sin label */
+#ficha-recurso input#numero-serie-ficha-recurso{
+  width: 150px;
+}
+
+/* ====== BOTONES ====== */
+button{
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  margin: 5px;
+  padding: 2px 10px;
+  border: 1px solid #888;
+  background: #efefef;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+button:hover{
+  background: #e6e6e6;
+}
+
+button:active{
+  background: #dcdcdc;
+}
+
+.fila-botones{
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 12px;
+}
+
+/* Separación de botones como en las capturas */
+#login button{
+  margin-right: 8px;
+}
+
+#datos-usuarios button{
+  margin-right: 8px;
+}
+
+/* Salir abajo a la derecha */
+#menu-principal > div:last-child{
+  text-align: right;
+}
+
+/* ====== BIENVENIDA + EDITAR DATOS (en línea) ====== */
+#bienvenida{
+  display: inline-block;
+  font-size: 18px;
+  margin-right: 10px;
+}
+
+/* ====== TABLAS ====== */
+table{
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 6px;
+}
+
+th, td{
+  border: 1px solid #bdbdbd;
+  padding: 6px 6px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 13px;
+  text-align: center;      
+  vertical-align: middle;
+}
+
+thead th{
+  background: #e6e6e6;
+  font-weight: 700;
+}
+
+table td button{
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Tabla de recursos más “compacta” */
+#contenedor-tabla-recursos table th,
+#contenedor-tabla-recursos table td{
+  padding: 5px 6px;
+}
+
+/* Columna acciones centrada */
+td:last-child{
+  white-space: nowrap;
+  text-align: center;
+}
+
+/* Botón X pequeño */
+td:last-child button:last-child{
+  padding: 1px 8px;
+  color: #b00000;
+  border-color: #b00000;
+  font-weight: 700;
+}
+
+td:last-child button:last-child:hover{
+  background: #ffe5e5;
+}
+
+/* ====== RESERVAS / RESEÑAS ====== */
+#ficha-recurso h2{
+  margin-top: 16px;
+}
+
+/* Si quieres que las fechas con <br> queden con aire */
+#tabla-reservas-ficha-recurso td,
+#tabla-resenyas-ficha-recurso td{
+  line-height: 1.25;
+}
+
+/* ====== VISIBILIDAD ====== */
+.ocultar{ display: none; }
+.mostrar{ display: block; }
+
+/* Colores reservas (según enunciado) */
+.reserva-finalizada { background: #ffffff; }  /* blanco */
+.reserva-en-uso-ok  { background: #cfe8ff; }  /* azul */
+.reserva-en-uso-mal { background: #ffc7c7; }  /* rojo */
+.reserva-pendiente  { background: #c8f7c8; }  /* verde */
