@@ -2,7 +2,7 @@
 
 var rpc = require("./rpc.js"); //incorporamos la libreria
 
-var datos=require("./datos.js")
+var datosServidor=require("./datos.js")
 var gestores=datosServidor.ges
 var sanitarios=datosServidor.san
 var ubicaciones=datosServidor.ubi
@@ -12,12 +12,6 @@ var recursos=datosServidor.rec
 var reservas=datosServidor.resv
 var resenyas=datosServidor.resny
 
-var ids_gestores = gestores.length + 1;
-var ids_sanitarios = sanitarios.length + 1;
-var ids_recursos = recursos.length + 1;
-var ids_reservas = reservas.length + 1;
-var ids_resenyas = resenyas.length + 1;
-
 console.log("Servidor RPC escuchando en el puerto 3501 listo para recibir peticiones...");
 
 var siguienteId = 2; 
@@ -26,7 +20,7 @@ function obtenerCategorias(callback) {
     return callback(categorias);
 }
 
-function obtenerCategorias(callback) {
+function obtenerModelos(callback) {
     return callback(modelos);
 }
 
@@ -41,7 +35,7 @@ function loginSanitario(usuario, password, callback) {
 
 function crearSanitario(datosSanitario, callback) { 
     var nuevoSanitario = {
-        id: ids_gestores++,
+        id: sanitarios.length + 1,
         nombre: datosSanitario.nombre,
         apellidos: datosSanitario.apellidos,
         usuario:  datosSanitario.usuario,
@@ -78,6 +72,8 @@ function actualizarSanitario(idSanitario, datosSanitario, callback){
             return callback(actSanitario.id);
         }
     }
+
+    return callback(null); // si el usuario no se encuentra
 }
 
 function obtenerSanitario(idSanitario, callback) {
@@ -95,25 +91,132 @@ function obtenerRecursos(idModelo, callback) {
     var recursos_salida = [];
 
     for (var i = 0; i < recursos.length; i++) {
-        var recurso = recursos[i];
-
-        if (recurso.modelo == idModelo) {
-            recursos_salida.push(recurso);
+        if (recursos[i].modelo == idModelo && recursos[i].estado == 0) {
+            recursos_salida.push(recursos[i]);
         }
     }
 
     return callback(recursos_salida);
 }
 
-//Función para eliminar un paciente. Retorna true o false 
-function eliminarPaciente(id, callback) {
-    for (var i = 0; i<pacientes.length ; i ++) {
-        if (pacientes[i].id == id) {
-            pacientes.splice(i, 1);
-            return callback(true); // paciente borrado
+function tiempoPendiente(idRecurso, callback) {
+    var recurso = recursos.find(r => r.id === idRecurso);
+
+    if (recurso == undefined) {
+        return callback(null);
+    }
+
+    var disponible = true;
+
+    for (var i = 0; i < reservas.length; i++) {
+        if (reservas[i].recurso == recurso.id && reservas[i].fecha_fin == null) {
+            var tiempo_ms = reservas[i].fecha_inicio - reservas[i].fecha_fin; // milisegundos
+
+            var minutosTotales = Math.floor(tiempo_ms / 1000 / 60);
+            var dias = Math.floor(minutosTotales / (60 * 24));
+            var horas = Math.floor((minutosTotales % (60 * 24)) / 60);
+            var minutos = minutosTotales % 60;
+
+            disponible = false;
         }
     }
-    return callback(false); // paciente no borrado (no encontrado)
+
+    if (disponible || (dias < 0 || horas < 0 || minutos < 0)) {
+        return callback(0);
+    }
+    else {
+        return callback({"dias": dias, "horas": horas, "minutos": minutos});
+    }
+}
+
+function obtenerReservas(idSanitario, callback) {
+    var reservas_salida = [];
+    for (var i = 0; i < reservas.length; i++) {
+        if (reservas[i].sanitario == idSanitario) {
+            reservas_salida.push(reservas[i]);
+        }
+    }
+    return callback(reservas_salida);
+}
+
+function obtenerResenyas(idRecurso, callback) {
+    var resenyas_salida = [];
+    for (var i = 0; i < resenyas.length; i++) {
+        if (resenyas[i].recurso == idRecurso) {
+            resenyas_salida.push(resenyas[i]);
+        }
+    }
+    return callback(resenyas_salida);
+}
+
+function crearResenya(idRecurso, idSanitario, valoracion, descripcion, callback) {
+    var sanitario = sanitarios.find(s => s.id === idSanitario);
+    var recurso = recursos.find(r => r.id === idRecurso);
+
+    if (sanitario == undefined || recurso == undefined) {
+        return callback(null);
+    }
+    else {
+        var idResenya = resenyas.length + 1;;
+        resenyas.push({id: idResenya, recurso: recurso.id, sanitario: sanitario.id, fecha: Date.now(), valor: valoracion, descripcion: descripcion});
+        return callback (idResenya);
+    }
+}
+
+function reservarRecurso(idRecurso, idSanitario, horasEstimadas, callback) {
+    var sanitario = sanitarios.find(s => s.id === idSanitario);
+    var recurso = recursos.find(r => r.id === idRecurso);
+
+    if (sanitario == undefined || recurso == undefined) {
+        return callback(null);
+    }
+    else {
+        var idReserva = reservas.length + 1;;
+        reservas.push({id: idReserva, recurso: recurso.id, sanitario: sanitario.id, horas_estimadas: horasEstimadas, fecha_peticion: Date.now(), fehca_inicio: null, fecha_fin: null});
+        return callback (idReserva);
+    }
+}
+
+function cancelarReserva(idReserva, callback) {
+    for (var i = 0; i < reservas.length; i++) {
+        if (reservas[i].id == idReserva) {
+            reservas.splice(i, 1);
+            return callback(true);
+        }
+    }
+    
+    return callback(false);
+}
+
+function iniciarReserva(idReserva, callback) {
+    for (var i = 0; i < reservas.length; i++) {
+        if (reservas[i].id == idReserva) {
+            reservas[i].fecha_inicio = Date.now();
+            return callback(true);
+        }
+    }
+    return callback(false);
+}
+
+function finalizarReserva(idReserva, callback) {
+    for (var i = 0; i < reservas.length; i++) {
+        if (reservas[i].id == idReserva) {
+            reservas[i].fecha_fin = Date.now();
+            return callback(true);
+        }
+    }
+    return callback(false);
+}
+
+function obtenerRecurso(idRecurso, callback) {
+    var recurso = recursos.find(r => r.id === idRecurso);
+
+    if (recurso == undefined) {
+        return callback(null);
+    }
+    else {
+        return callback(recurso);
+    }
 }
 
 var servidor = rpc.server(); // crear el servidor RPC
@@ -121,7 +224,18 @@ var app = servidor.createApp("gestion_pacientes"); // crear aplicación de RPC
 
 //Registramos los procedimientos
 app.registerAsync(obtenerCategorias);
-app.registerAsync(anyadirPaciente);
-app.registerAsync(eliminarPaciente);
-
-
+app.registerAsync(obtenerModelos);
+app.registerAsync(loginSanitario);
+app.registerAsync(crearSanitario);
+app.registerAsync(actualizarSanitario);
+app.registerAsync(obtenerSanitario);
+app.registerAsync(obtenerRecursos);
+app.registerAsync(tiempoPendiente);
+app.registerAsync(obtenerReservas);
+app.registerAsync(obtenerResenyas);
+app.registerAsync(crearResenya);
+app.registerAsync(reservarRecurso);
+app.registerAsync(cancelarReserva);
+app.registerAsync(iniciarReserva);
+app.registerAsync(finalizarReserva);
+app.registerAsync(obtenerRecurso);
