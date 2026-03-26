@@ -22,7 +22,7 @@ var id_sanitario = null;
 
 var id_recurso_resenya = null;
 
-var ahora = new Date("2026-02-25T12:30:00");
+var ahora = new Date("2026-02-25T12:30:00"); // se ha definido una hora fija para que se puedan ver correctamente todos los tipos de reservas (pendientes, activas, retardadas, etc.)
 
 function cambiarSeccion(seccion){
     if (seccion == "menu-principal") {
@@ -218,7 +218,7 @@ function actualizarReservasPendientes() {
                         var disponible = datosRecurso.disponible;
 
                         tiempoPendiente(recurso.id, function (tiempo) {
-                            var tiempoTexto = formatearTiempoPendiente(tiempo);
+                            var tiempoTexto = formatearTiempoPendiente(tiempo, disponible);
                             var acciones = "";
 
                             if (tiempo == 0 && disponible) {
@@ -332,7 +332,7 @@ function abrirResenya(idRecurso, numeroSerie) {
     id_recurso_resenya = idRecurso;
 
     document.getElementById("numero-serie-resenya").innerHTML = numeroSerie;
-    document.getElementById("valoracion-resenya").value = 0;
+    document.getElementById("valoracion-resenya").value = 1;
     document.getElementById("texto-resenya").value = "";
 
     cambiarSeccion("resenya");
@@ -463,7 +463,7 @@ function actualizarTablaNuevaReserva() {
     var idModelo = document.getElementById("modelo-nueva-reserva").value;
 
     if (idModelo != "default") {
-        obtenerRecursos(idModelo, function(recursos) { // solo obtiene recursos operativoss
+        obtenerRecursos(idModelo, function(recursos) { // solo obtiene recursos operativos
             if (recursos.length > 0) {
                 var filas = new Array(recursos.length);
                 var restantes = recursos.length;
@@ -471,32 +471,45 @@ function actualizarTablaNuevaReserva() {
                 for (let i = 0; i < recursos.length; i++) {
                     let recurso = recursos[i];
 
-                    tiempoPendiente(recurso.id, function(tiempo) {
-                        obtenerResenyas(recurso.id, function(resenyas) {
-                            var valoracion = calcularValoracionMedia(resenyas);
-                            var accion = "";
+                    obtenerRecurso(recurso.id, function(datosRecurso) { // llamamos otra vez para poder saber con certeza que está disponible
+                        if (datosRecurso != null) {
+                            var disponible = datosRecurso.disponible;
 
-                            if (tiempo == 0) {
-                                accion = "<td><button onclick='retirarRecurso(" + recurso.id + "," + false + ")'>Retirar</button></td>";
-                            }
-                            else {
-                                accion = "<td><button onclick='crearnuevaReserva(" + recurso.id + ")'>Reservar</button></td>";
-                            }
+                            tiempoPendiente(recurso.id, function(tiempo) {
+                                obtenerResenyas(recurso.id, function(resenyas) {
+                                    var valoracion = calcularValoracionMedia(resenyas);
+                                    var accion = "";
 
-                            filas[i] =
-                                "<tr>" +
-                                    "<td>" + recurso.numero_serie + "</td>" +
-                                    "<td>" + recurso.ubicacion + "</td>" +
-                                    "<td>" + formatearTiempoPendiente(tiempo) + "</td>" +
-                                    "<td>" + valoracion + "</td>" +
-                                    accion +
-                                "</tr>";
+                                    if (tiempo == 0 && disponible) { // está disponible de verdad
+                                        accion = "<td><button onclick='retirarRecurso(" + recurso.id + "," + false + ")'>Retirar</button></td>";
+                                    }
+                                    else {
+                                        accion = "<td><button onclick='crearnuevaReserva(" + recurso.id + ")'>Reservar</button></td>";
+                                    }
 
+                                    filas[i] =
+                                        "<tr>" +
+                                            "<td>" + recurso.numero_serie + "</td>" +
+                                            "<td>" + recurso.ubicacion + "</td>" +
+                                            "<td>" + formatearTiempoPendiente(tiempo, disponible) + "</td>" +
+                                            "<td>" + valoracion + "</td>" +
+                                            accion +
+                                        "</tr>";
+
+                                    restantes--;
+                                    if (restantes === 0) {
+                                        tablaNuevasReservas.innerHTML = filas.join("");
+                                    }
+                                });
+                            });
+                        }
+                        else {
+                            filas[i] = "";
                             restantes--;
                             if (restantes === 0) {
                                 tablaNuevasReservas.innerHTML = filas.join("");
                             }
-                        });
+                        }
                     });
                 }
             }
@@ -520,8 +533,8 @@ function calcularValoracionMedia(resenyas) {
 function salir(){
     document.getElementById("usuario-login").value = "";
     document.getElementById("password-login").value = "";
+    id_sanitario = null;
     cambiarSeccion("login");
-
 }
 
 function formatearFecha(fecha) {
@@ -542,10 +555,14 @@ function formatearFecha(fecha) {
     return dia + "/" + mes + "/" + anyo + "<br>" + horas + ":" + minutos + ":" + segundos;
 }
 
-function formatearTiempoPendiente(tiempo) {
-    if (tiempo === 0) {
+function formatearTiempoPendiente(tiempo, disponible) {
+    if (tiempo == 0 && disponible) {
         return "Disponible";
     }
-
-    return tiempo + " h";
+    else if (tiempo == 0 && !disponible) {
+        return "Pendiente de devolución";
+    }
+    else {
+        return tiempo + " h";
+    }
 }

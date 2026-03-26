@@ -115,7 +115,7 @@ function obtenerRecursos(idModelo, callback) {
     return callback(recursos_salida);
 }
 
-function tiempoPendiente(idRecurso, callback) {
+function tiempoPendiente(idRecurso, callback) { // solo se tiene en cuenta el tiempo de la reserva activa actual, no se ha hecho una gestion de colas completa de forma intencional
     var reserva_activa = null;
 
     for (var i = 0; i < reservas.length; i++) {
