@@ -10,7 +10,7 @@ body{
 
 /* ====== CONTENEDOR PRINCIPAL (como en las capturas) ====== */
 h1,
-#login, #menu-principal, #datos-usuarios, #ficha-recurso{
+#login, #menu-principal, #datos-usuarios, #ficha-recurso, #nueva-reserva, #resenya{
   width: 90%;
   margin: 0 auto;
   border: 2px solid #000;
@@ -63,7 +63,9 @@ label{
 
 /* Filas del login y datos-usuarios: centradas y sin huecos raros */
 #login > div,
-#datos-usuarios > div{
+#datos-usuarios > div,
+#nueva-reserva > div,
+#resenya > div{
   display: grid;
   grid-template-columns: max-content max-content; /* nada de 1fr */
   column-gap: 8px;
@@ -132,6 +134,38 @@ button:active{
   margin-top: 12px;
 }
 
+.boton-retirar {
+    color: #1f5fbf;
+    border: 1px solid #1f5fbf;
+    background-color: #eef5ff;
+    border-radius: 6px;
+    padding: 4px 10px;
+}
+
+.boton-cancelar {
+    color: #c40000;
+    border: 1px solid #c40000;
+    background-color: #fff3f3;
+    border-radius: 6px;
+    padding: 4px 10px;
+}
+
+.boton-devolver {
+    color: #b36b00;
+    border: 1px solid #b36b00;
+    background-color: #fff6e6;
+    border-radius: 6px;
+    padding: 4px 10px;
+}
+
+.boton-resenya {
+    color: #0f7a2f;
+    border: 1px solid #0f7a2f;
+    background-color: #eefbef;
+    border-radius: 6px;
+    padding: 4px 10px;
+}
+
 /* Separación de botones como en las capturas */
 #login button{
   margin-right: 8px;
@@ -191,18 +225,6 @@ td:last-child{
   text-align: center;
 }
 
-/* Botón X pequeño */
-td:last-child button:last-child{
-  padding: 1px 8px;
-  color: #b00000;
-  border-color: #b00000;
-  font-weight: 700;
-}
-
-td:last-child button:last-child:hover{
-  background: #ffe5e5;
-}
-
 /* ====== RESERVAS / RESEÑAS ====== */
 #ficha-recurso h2{
   margin-top: 16px;
@@ -223,3 +245,59 @@ td:last-child button:last-child:hover{
 .reserva-en-uso-ok  { background: #cfe8ff; }  /* azul */
 .reserva-en-uso-mal { background: #ffc7c7; }  /* rojo */
 .reserva-pendiente  { background: #c8f7c8; }  /* verde */
+
+#texto-resenya {
+  width: 320px;
+  height: 90px;
+  resize: vertical;
+}
+
+#numero-serie-resenya {
+  color: #000;
+  font-weight: bold;
+}
+
+#resenya {
+  text-align: left;
+}
+
+#resenya h2 {
+  margin-bottom: 18px;
+}
+
+.fila-resenya {
+  display: grid;
+  grid-template-columns: 120px 220px;
+  column-gap: 12px;
+  justify-content: center;
+  align-items: center;
+  margin: 10px 0;
+}
+
+.fila-resenya label {
+  color: #1f33cc;
+  font-size: 16px;
+  text-align: right;
+}
+
+#numero-serie-resenya {
+  color: #000;
+  font-size: 16px;
+}
+
+#valoracion-resenya {
+  width: 42px;
+}
+
+#texto-resenya {
+  width: 220px;
+  height: 38px;
+  resize: none;
+}
+
+.botones-resenya {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}

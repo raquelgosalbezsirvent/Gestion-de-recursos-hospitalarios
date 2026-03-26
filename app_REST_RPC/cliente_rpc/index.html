@@ -5,6 +5,9 @@
     <meta charset="utf8">
     <title>Gestión de recursos hospitalarios - Sanitarios</title>
     <link rel="stylesheet" href="estilos.css">
+    <script src="rest.js"></script> 
+	<script src="rpc.js"></script>
+	<script src="main.js"></script>
 </head>
 
 
@@ -25,52 +28,48 @@
     <div id="menu-principal" class="ocultar">
         <h2>Inicio</h2>
         <div id="bienvenida"></div>
-        <button onclick="edicion_usuario()">Editar datos</button>
+        <button onclick="datos_usuario()">Editar datos</button>
 
-        <h3>Búsqueda de recursos</h3>
-        <div>
-            <label for="categoria-filtro">Categoría:</label>
-            <select id="categoria-filtro" onclick="filtrarModelo('-filtro')">
-            </select>
-        </div>
-        <div>
-            <label for="modelo-filtro">Modelo:</label>
-            <select id="modelo-filtro">
-            </select>
-        </div>
-        <div>
-            <label for="ubicacion-filtro">Ubicación:</label>
-            <select id="ubicacion-filtro">
-            </select>
-        </div>
-        <div>
-            <label for="estado-filtro">Estado:</label>
-            <select id="estado-filtro">
-            </select>
-        </div>
-        <div>
-            <button onclick="actualizarTabla()">Buscar</button>
-        </div>
-
-        <h3>Recursos</h3>
-        <div id="contenedor-tabla-recursos">
+        <h3>Reservas pendientes</h3>
+        <div id="contenedor-tabla-reservas-pendientes">
             <table>
                 <thead>
                     <tr>
-                        <th>Nº Serie</th>
                         <th>Categoría</th>
                         <th>Modelo</th>
+                        <th>Nº Serie</th>
                         <th>Ubicación</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
+                        <th>Fecha petición</th>
+                        <th>Tiempo restante</th>
+                        <th></th>
+                        <th></th>
                     </tr>
                 </thead>
-                <tbody id="tabla-recursos">
+                <tbody id="tabla-reservas-pendientes">
+                </tbody>
+            </table>
+        </div>
+
+        <h3>Reservas realizadas</h3>
+        <div id="contenedor-tabla-reservas-realizadas">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Categoría</th>
+                        <th>Modelo</th>
+                        <th>Nº Serie</th>
+                        <th>Horas estim. de uso</th>
+                        <th>Fecha inicio</th>
+                        <th>Fecha fin</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-reservas-realizadas">
                 </tbody>
             </table>
         </div>
         <div>
-            <button onclick="nuevoRecurso()">Añadir recurso</button>
+            <button onclick="abrirnuevaReserva()">Nueva reserva</button>
         </div>
         <div>
             <button onclick="salir()">Salir</button>
@@ -87,73 +86,77 @@
         <button onclick="" id="boton-datos-usuario-cancelar">Cancelar</button> <!--En edicion vuelve a menu, en registro vuelve a login-->
     </div>
 
-    <div id="ficha-recurso" class="ocultar">
-        <h2>Datos Recurso</h2>
+    <div id="nueva-reserva" class="ocultar">
+    <h2>Nueva Reserva</h2>
 
-        <div>
-            <label for="categoria-ficha-recurso">Categoría:</label>
-            <select id="categoria-ficha-recurso" onclick="filtrarModelo('-ficha-recurso')">
-            </select>
-        </div>
-        <div>
-            <label for="modelo-ficha-recurso">Modelo:</label>
-            <select id="modelo-ficha-recurso">
-            </select>
-        </div>
-        <div>
-            <label for="numero-serie-ficha-recurso">Nº Serie:</label> <input id="numero-serie-ficha-recurso"/>
-        </div>
-        <div>
-            <label for="ubicacion-ficha-recurso">Ubicación:</label>
-            <select id="ubicacion-ficha-recurso">
-            </select>
-        </div>
-        <div>
-            <label for="estado-ficha-recurso">Estado:</label>
-            <select id="estado-ficha-recurso">
-            </select>
-        </div>
-        <div>
-            <button onclick="" id="boton-ficha-recurso"></button> <!--Depende de si es nuevo o edicion-->
-        </div>
-
-        <h2>Reservas</h2>
-        <div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Sanitario</th>
-                        <th>Horas Estimadas</th>
-                        <th>Fecha Petición</th>
-                        <th>Fecha Inicio</th>
-                        <th>Fecha Fin</th>
-                    </tr>
-                </thead>
-                <tbody id="tabla-reservas-ficha-recurso">
-                </tbody>
-            </table>
-        </div>
-
-        <h2>Reseñas</h2>
-        <div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Fecha</th>
-                        <th>Sanitario</th>
-                        <th>Valoración</th>
-                        <th>Comentario</th>
-                    </tr>
-                </thead>
-                <tbody id="tabla-resenyas-ficha-recurso">
-                </tbody>
-            </table>
-        </div>
-        <div>
-            <button onclick="cambiarSeccion('menu-principal')"> Volver al listado </button>
-        </div>
-            
+    <div>
+        <label for="categoria-nueva-reserva">Categoría:</label>
+        <select id="categoria-nueva-reserva" onchange="filtrarModelo('-nueva-reserva')">
+        </select>
     </div>
+    <div>
+        <label for="modelo-nueva-reserva">Modelo:</label>
+        <select id="modelo-nueva-reserva" onchange="actualizarTablaNuevaReserva()">
+        </select>
+    </div>
+    <div>
+        <label for="tiempo-est-uso-nueva-reserva">Tiempo estim. de uso:</label>
+        <input id="tiempo-est-uso-nueva-reserva" type="number" min="1"/>
+    </div>
+
+    <div id="contenedor-tabla-nueva-reserva">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nº Serie</th>
+                    <th>Ubicación</th>
+                    <th>Horas restantes</th>
+                    <th>Valoración</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="tabla-nueva-reserva">
+            </tbody>
+        </table>
+    </div>
+
+    <div>
+        <button onclick="cambiarSeccion('menu-principal')">Volver al inicio</button>
+    </div>
+</div>
+
+    <div id="resenya" class="ocultar">
+        <h2>Nueva reseña</h2>
+
+        <div>
+            <label>Recurso:</label>
+            <span id="numero-serie-resenya"></span>
+        </div>
+
+        <div>
+            <label for="valoracion-resenya">Valoración:</label>
+            <select id="valoracion-resenya">
+                <option value="0">0</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+            </select>
+        </div>
+
+        <div>
+            <label for="texto-resenya">Comentario:</label><br>
+            <textarea id="texto-resenya"></textarea>
+        </div>
+
+        <div>
+            <button onclick="guardarResenya()">Guardar</button>
+            <button onclick="cancelarResenya()">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="ahora">Ahora: </div>
         
 <script src="rest.js"></script>
 <script src="main.js"></script>

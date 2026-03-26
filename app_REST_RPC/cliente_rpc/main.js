@@ -1,11 +1,34 @@
+var app = rpc("localhost", "gestion_pacientes");
+
+var obtenerCategorias = app.procedure("obtenerCategorias"); 
+var obtenerModelos = app.procedure("obtenerModelos");
+var loginSanitario = app.procedure("loginSanitario"); 
+var crearSanitario = app.procedure("crearSanitario"); 
+var actualizarSanitario = app.procedure("actualizarSanitario"); 
+var obtenerSanitario = app.procedure("obtenerSanitario"); 
+var obtenerRecursos = app.procedure("obtenerRecursos"); 
+var tiempoPendiente = app.procedure("tiempoPendiente"); 
+var obtenerReservas = app.procedure("obtenerReservas"); 
+var obtenerResenyas = app.procedure("obtenerResenyas"); 
+var crearResenya = app.procedure("crearResenya"); 
+var reservarRecurso = app.procedure("reservarRecurso"); 
+var cancelarReserva = app.procedure("cancelarReserva"); 
+var iniciarReserva = app.procedure("iniciarReserva"); 
+var finalizarReserva = app.procedure("finalizarReserva"); 
+var obtenerRecurso = app.procedure("obtenerRecurso"); 
+
 var seccionActual = "login";
-var id_gestor = null;
+var id_sanitario = null;
+
+var id_recurso_resenya = null;
+
+var ahora = new Date("2026-02-25T12:30:00");
 
 function cambiarSeccion(seccion){
     if (seccion == "menu-principal") {
-        actualizarSelect("-filtro");
+        actualizarReservasPendientes();
+        actualizarReservasRealizadas();
     }
-
     document.getElementById(seccionActual).classList.remove("mostrar");
     document.getElementById(seccionActual).classList.add("ocultar");
 
@@ -14,39 +37,29 @@ function cambiarSeccion(seccion){
 
     seccionActual=seccion;
 
+    document.getElementById("ahora").innerHTML = formatearFecha(ahora);
 }
 
 function entrar(){
-    login = {
-        usuario: document.getElementById("usuario-login").value,
-        password: document.getElementById("password-login").value
-    }
+    var usuario = document.getElementById("usuario-login").value;
+    var password = document.getElementById("password-login").value;
 
-    rest.post("/api/gestores/login", login, function (estado, respuesta) {
-        if (estado == 201) {
+    loginSanitario(usuario, password, function (idSanitario) {
+        if (idSanitario != null) {
+            id_sanitario = idSanitario;
 
-            id_gestor = respuesta;    
-
-            rest.get("/api/gestores/" + id_gestor, function(estado, respuesta){
-                if (estado == 200) {
-                    document.getElementById("bienvenida").innerHTML = "Bienvenido/a " + respuesta.nombre + " " + respuesta.apellidos;
-                }
-                else if (estado == 404) {
-                    document.getElementById("bienvenida").innerHTML = respuesta.mensaje;
+            obtenerSanitario(idSanitario, function(sanitario) {
+                if (sanitario != null) {
+                    document.getElementById("bienvenida").innerHTML = "Bienvenido/a " + sanitario.nombre + " " + sanitario.apellidos;
                 }
                 else {
-                    document.getElementById("bienvenida").innerHTML = "Error desconocido";
+                    document.getElementById("bienvenida").innerHTML = "No se ha podido obtener el Sanitario";
                 }
-            })
-
-            cambiarSeccion("menu-principal");
-            
-        }
-        else if (estado == 403) {
-            alert(respuesta.mensaje);
+                cambiarSeccion("menu-principal");
+            });
         }
         else {
-            alert("Error desconocido");
+            alert("No se pudo obtener el sanitario");
         }
     });
 }
@@ -56,6 +69,7 @@ function registro_usuario() {
     document.getElementById("apellidos-registro").value = "";
     document.getElementById("usuario-registro").value = "";
     document.getElementById("password-registro").value = "";
+    document.getElementById("password-registro").placeholder = "";
 
     document.getElementById("boton-datos-usuario").onclick = function(){ gestionUsuario('registro'); };
     document.getElementById("boton-datos-usuario").textContent = "Registrar";
@@ -65,13 +79,14 @@ function registro_usuario() {
     cambiarSeccion("datos-usuarios");
 }
 
-function edicion_usuario() {
-    rest.get("/api/gestores/" + id_gestor, function (estado, respuesta) {
-        if (estado == 200) {
-            document.getElementById("nombre-registro").value = respuesta.nombre;
-            document.getElementById("apellidos-registro").value = respuesta.apellidos;
-            document.getElementById("usuario-registro").value = respuesta.usuario;
+function datos_usuario() {
+    obtenerSanitario(id_sanitario, function (sanitario) {
+        if (sanitario != null) {
+            document.getElementById("nombre-registro").value = sanitario.nombre;
+            document.getElementById("apellidos-registro").value = sanitario.apellidos;
+            document.getElementById("usuario-registro").value = sanitario.usuario;
             document.getElementById("password-registro").value = "";
+            document.getElementById("password-registro").placeholder = "Dejar en blanco para mantener la actual";
 
             document.getElementById("boton-datos-usuario").onclick = function(){ gestionUsuario('edicion'); };
             document.getElementById("boton-datos-usuario").textContent = "Editar";
@@ -80,14 +95,14 @@ function edicion_usuario() {
 
             cambiarSeccion("datos-usuarios");
         }
-        else if (estado == 404) {
-            document.getElementById("nombre-registro").value = respuesta.mensaje;
+        else {
+            document.getElementById("nombre-registro").value = "Error";
         }
     })
 }
 
 function gestionUsuario(tipo_gestion){
-    usuario = {
+    var usuario = {
         nombre: document.getElementById("nombre-registro").value,
         apellidos: document.getElementById("apellidos-registro").value,
         usuario: document.getElementById("usuario-registro").value,
@@ -95,121 +110,67 @@ function gestionUsuario(tipo_gestion){
     }
 
     if (tipo_gestion == "registro") {
-        rest.post("/api/gestores", usuario, function (estado, respuesta) {
-            if (estado == 201) {
-                alert(respuesta.mensaje);
+        crearSanitario(usuario, function (idSanitario) {
+            if (idSanitario != null) {
+                alert("Usuario creado correctamente");
                 cambiarSeccion("login");
             }
-            else if (estado == 409) {
-                alert(respuesta.mensaje);
-            }
             else {
-                alert("Error desconocido");
+                alert("El usuario ya existe");
             }
         });
     }
     else if (tipo_gestion == "edicion") {
-        rest.put("/api/gestores/" + id_gestor, usuario, function(estado, respuesta) {
-            if (estado == 200) {
-                alert(respuesta.mensaje);
+        actualizarSanitario(id_sanitario, usuario, function(idSanitario) {
+            if (idSanitario != null) {
+                alert("Datos actualizados correctamente");
                 cambiarSeccion("menu-principal");
             }
-            else if (estado == 409) {
-                alert(respuesta.mensaje);
-            }
-            else if (estado == 404) {
-                alert(respuesta.mensaje);
-            }
             else {
-                alert("Error desconocido");
+                alert("El usuario está repetido o no se encuentra");
             }
-        })
+        });
         
     }
 }
 
 function actualizarSelect(sufijo){
-    rest.get("/api/categorias", function(estado, respuesta) {
-        if (estado == 200) {
-            var categorias = respuesta;
+    obtenerCategorias(function(categorias) {
+        if (categorias.length > 0) {
             var selectCategorias = document.getElementById("categoria"+sufijo);
             selectCategorias.innerHTML = ""; // Limpiar el select antes de añadir nuevas opciones
-            if (sufijo == "-filtro") {
-                selectCategorias.innerHTML = '<option value="default">Todos</option>';
-            }
-            else if (sufijo == "-ficha-recurso") {
-                selectCategorias.innerHTML = '<option value="default"> </option>';
-            }
+            
+            selectCategorias.innerHTML = '<option value="default"> </option>';
+
             for (var i = 0; i < categorias.length; i++) {
                 selectCategorias.innerHTML += '<option value="' + categorias[i].id + '">' + categorias[i].nombre + '</option>';
             }
         }
     });
 
-    rest.get("/api/modelos", function(estado, respuesta) {
-        if (estado == 200) {
-            var modelos = respuesta;
+    obtenerModelos( function(modelos) {
+        if (modelos.length > 0) {
             var selectModelos = document.getElementById("modelo"+sufijo);
             selectModelos.innerHTML = ""; // Limpiar el select antes de añadir nuevas opciones
-            if (sufijo == "-filtro") {
-                selectModelos.innerHTML = '<option value="default">Todos</option>';
-            }
-            else if (sufijo == "-ficha-recurso") {
-                selectModelos.innerHTML = '<option value="default"> </option>';
-            }
+            
+            selectModelos.innerHTML = '<option value="default"> </option>';
+
             for (var i = 0; i < modelos.length; i++) {
                 selectModelos.innerHTML += '<option value="' + modelos[i].id + '">' + modelos[i].nombre + '</option>';
             }
         }
     });
-
-    rest.get("/api/ubicaciones", function(estado, respuesta) {
-        if (estado == 200) {
-            var ubicaciones = respuesta;
-            var selectUbicaciones = document.getElementById("ubicacion"+sufijo);
-            selectUbicaciones.innerHTML = ""; // Limpiar el select antes de añadir nuevas opciones
-            if (sufijo == "-filtro") {
-                selectUbicaciones.innerHTML = '<option value="default">Todos</option>';
-            }
-            else if (sufijo == "-ficha-recurso") {
-                selectUbicaciones.innerHTML = '<option value="default"> </option>';
-            }
-            for (var i = 0; i < ubicaciones.length; i++) {
-                selectUbicaciones.innerHTML += '<option value="' + ubicaciones[i].id + '">' + ubicaciones[i].nombre + '</option>';
-            }
-        }
-    });
-
-    var estados = {
-        0: "Operativo",
-        1: "De baja o defectuoso",
-        2: "En mantenimiento"
-    };
-
-    var selectEstados = document.getElementById("estado"+sufijo);
-    selectEstados.innerHTML = ""; // Limpiar el select antes de añadir nuevas opciones
-    if (sufijo == "-filtro") {
-        selectEstados.innerHTML = '<option value="default">Todos</option>';
-    }
-    for (var [clave, valor] of Object.entries(estados)) {
-        selectEstados.innerHTML += '<option value="' + clave + '">' + valor + '</option>';
-    }
 }
 
-function filtrarModelo(sufijo, id_seleccion) {
+function filtrarModelo(sufijo) {
 
-    var filtroCategoria = document.getElementById("categoria"+sufijo).value;
+    var filtroCategoria = document.getElementById("categoria" + sufijo).value;
 
-    rest.get("/api/modelos", function(estado, respuesta) {
-        if (estado == 200) {
-            var modelos = respuesta;
-            var selectModelos = document.getElementById("modelo"+sufijo);
-            if (sufijo == "-filtro") {
-                selectModelos.innerHTML = '<option value="default">Todos</option>';
-            }
-            else if (sufijo == "-ficha-recurso") {
-                selectModelos.innerHTML = '<option value="default"> </option>';
-            }
+    obtenerModelos(function(modelos) {
+        if (modelos.length > 0) {
+            var selectModelos = document.getElementById("modelo" + sufijo);
+            
+            selectModelos.innerHTML = '<option value="default"> </option>';
 
             if (filtroCategoria == "default") {
                 for (var i = 0; i < modelos.length; i++) {
@@ -218,324 +179,353 @@ function filtrarModelo(sufijo, id_seleccion) {
             }
             else {
                 for (var i = 0; i < modelos.length; i++) {
-                    if (modelos[i].categoria == filtroCategoria) {
+                    if (modelos[i].categoria == Number(filtroCategoria)) {
                         selectModelos.innerHTML += '<option value="' + modelos[i].id + '">' + modelos[i].nombre + '</option>';
                     }
                 }
             }
 
-            if (id_seleccion != undefined) {
-                document.getElementById("modelo"+sufijo).value = id_seleccion;
+            if (sufijo == "-nueva-reserva") {
+                document.getElementById("tabla-nueva-reserva").innerHTML = "";
             }
         }
-    })
-}
-
-function actualizarTabla() {
-    var params = [];
-
-    var filtro_categoria = document.getElementById("categoria-filtro").value;
-    if (filtro_categoria != "default") {
-        params.push("categoria=" + encodeURIComponent(filtro_categoria));
-    }
-
-    filtro_modelo = document.getElementById("modelo-filtro").value;
-    if (filtro_modelo != "default") {
-        params.push("modelo=" + encodeURIComponent(filtro_modelo));
-    }
-
-    filtro_ubicacion = document.getElementById("ubicacion-filtro").value;
-    if (filtro_ubicacion != "default") {
-        params.push("ubicacion=" + encodeURIComponent(filtro_ubicacion));
-    }
-
-    filtro_estado = document.getElementById("estado-filtro").value;
-    if (filtro_estado != "default") {
-        params.push("estado=" + encodeURIComponent(filtro_estado));
-    }
-
-    var url = "/api/recursos" + (params.length ? "?" + params.join("&") : "");
-
-    var tablaRecursos = document.getElementById("tabla-recursos");
-    tablaRecursos.innerHTML = ""; // Limpiar la tabla antes de añadir nuevos recursos
-
-    var recursos = [];
-    rest.get(url, function(estado, respuesta) {
-        if (estado == 200) {
-            recursos = respuesta;
-            
-            // hay que concatenar las llamadas al servidor porque hay que esperar 
-            // a las respuestas de cada una para pasar a la siguiente
-            rest.get("/api/categorias", function(estado, respuesta) {
-                if (estado == 200) {
-                    var categorias = respuesta;
-                    
-                    rest.get("/api/modelos", function(estado, respuesta) {
-                        if (estado == 200) {
-                            var modelos = respuesta;
-
-                            for (var i = 0; i < recursos.length; i++) {
-                                for (var j = 0; j < modelos.length; j++) {
-                                    if (recursos[i].modelo == modelos[j].id) {
-                                        for (var k = 0; k < categorias.length; k++) {
-                                            if (modelos[j].categoria == categorias[k].id) {
-                                                recursos[i].categoria = categorias[k].nombre;
-                                                break;
-                                            }
-                                        }
-                                        recursos[i].modelo = modelos[j].nombre;
-                                        break;
-                                    }
-                                }
-                            }
-
-                            rest.get("/api/ubicaciones", function(estado, respuesta) {
-                                if (estado == 200) {
-                                    var ubicaciones = respuesta;
-
-                                    for (var i = 0; i < recursos.length; i++) {
-                                        for (var j = 0; j < ubicaciones.length; j++) {
-                                            if (recursos[i].ubicacion == ubicaciones[j].id) {
-                                                recursos[i].ubicacion = ubicaciones[j].nombre;
-                                                break;
-                                            }
-                                        }
-                                    }
-
-                                    var estados = {
-                                        0: "Operativo",
-                                        1: "De baja o defectuoso",
-                                        2: "En mantenimiento"
-                                    }
-
-                                    for (var i = 0; i < recursos.length; i++) {
-                                        recursos[i].estado = estados[recursos[i].estado];
-                                    }
-
-                                    for (var i = 0; i < recursos.length; i++) {
-                                        tablaRecursos.innerHTML += "<tr><td>" + recursos[i].numero_serie + "</td><td>" + recursos[i].categoria + "</td><td>" + recursos[i].modelo + "</td><td>" + recursos[i].ubicacion + "</td><td>" + recursos[i].estado + "</td><td><button onclick='abrirRecurso(" + recursos[i].id + ")'>Abrir</button><button onclick='eliminarRecurso(" + recursos[i].id + ")'>X</button></td></tr>";
-                                    }
-                                }
-                                else {
-                                    alert("Error al cargar las ubicaciones");
-                                }
-                            });
-                        }
-                        else {
-                            alert("Error al cargar los modelos");
-                        }
-                    });
-                }
-                else {
-                    alert("Error al cargar las categorías");
-                }
-            });
-        }
-        else {
-            alert("Error al cargar los recursos");
-        }
     });
 }
 
-function abrirRecurso(id) {
-    actualizarSelect("-ficha-recurso");
+function actualizarReservasPendientes() {
+    var tablaReservasPendientes = document.getElementById("tabla-reservas-pendientes");
+    tablaReservasPendientes.innerHTML = ""; // vaciar la tabla
 
-    document.getElementById("tabla-reservas-ficha-recurso").innerHTML = "";
-    document.getElementById("tabla-resenyas-ficha-recurso").innerHTML = "";
+    obtenerReservas(id_sanitario, function (reservas) {
+        if (reservas.length > 0) {
+            var reservas_pendientes = reservas.filter(function (r) { // se filtra por reservas pendientes, es decir, que no haya empezado
+                return r.fecha_inicio == null;
+            });
 
-    rest.get("/api/recursos/" + id, function(estado, respuesta) {
-        if (estado == 200) {
-            var recurso = respuesta;
-            rest.get("/api/modelos", function(estado, respuesta) {
-                if (estado == 200) {
-                    var modelos = respuesta;
+            reservas_pendientes.sort(function (a, b) { // ordenar por fecha de peticion
+                return a.fecha_peticion - b.fecha_peticion;
+            });
 
-                    for (let i = 0; i < modelos.length; i++) {
-                        if (modelos[i].id == recurso.modelo) {
-                            document.getElementById("categoria-ficha-recurso").value = modelos[i].categoria;
-                            break;
+            var filas = new Array(reservas_pendientes.length);
+            var restantes = reservas_pendientes.length;
+
+            for (let i = 0; i < reservas_pendientes.length; i++) {
+                let reserva = reservas_pendientes[i];
+
+                obtenerRecurso(reserva.recurso, function (datosRecurso) {
+                    if (datosRecurso != null) {
+                        var recurso = datosRecurso.recurso;
+                        var disponible = datosRecurso.disponible;
+
+                        tiempoPendiente(recurso.id, function (tiempo) {
+                            var tiempoTexto = formatearTiempoPendiente(tiempo);
+                            var acciones = "";
+
+                            if (tiempo == 0 && disponible) {
+                                acciones += "<td><button class='boton-retirar' onclick='retirarRecurso(" + reserva.id + "," + true + ")'>Retirar</button></td>";
+                            }
+                            else {
+                                acciones += "<td></td>";
+                            }
+
+                            acciones += "<td><button class='boton-cancelar' onclick='eliminarReserva(" + reserva.id + ")'>X</button></td>";
+
+                            filas[i] =
+                                "<tr>" +
+                                    "<td>" + (recurso.categoria || "") + "</td>" +
+                                    "<td>" + (recurso.modelo || "") + "</td>" +
+                                    "<td>" + (recurso.numero_serie || "") + "</td>" +
+                                    "<td>" + (recurso.ubicacion || "") + "</td>" +
+                                    "<td>" + formatearFecha(reserva.fecha_peticion) + "</td>" +
+                                    "<td>" + tiempoTexto + "</td>" +
+                                    acciones +
+                                "</tr>";
+
+                            restantes--;
+                            if (restantes === 0) {
+                                tablaReservasPendientes.innerHTML = filas.join("");
+                            }
+                        });
+                    }
+                    else {
+                        filas[i] = "";
+                        restantes--;
+                        if (restantes === 0) {
+                            tablaReservasPendientes.innerHTML = filas.join("");
                         }
                     }
-                    filtrarModelo("-ficha-recurso", recurso.modelo);
-                    document.getElementById("numero-serie-ficha-recurso").value = recurso.numero_serie;
-                    document.getElementById("ubicacion-ficha-recurso").value = recurso.ubicacion;
-                    document.getElementById("estado-ficha-recurso").value = recurso.estado;
-                    document.getElementById("boton-ficha-recurso").onclick = function() { editarRecurso(id); };
-                    document.getElementById("boton-ficha-recurso").textContent = "Editar recurso";
-                    
+                });
+            }
+        }
+        else {
+            alert("No se tienen reservas pendientes a mostrar");
+        }
+    });
+}
 
-                    rest.get("/api/recursos/" + id + "/reservas", function(estado, respuesta) {
-                        if (estado == 200) {
-                            var reservas = respuesta;
-                            var tablaReservas = document.getElementById("tabla-reservas-ficha-recurso");
-                            
-                            for (let i = 0; i < reservas.length; i++) {
-                                rest.get("/api/sanitarios/" + reservas[i].sanitario, function(estado, respuesta) {
-                                    if (estado == 200) {
-                                        var sanitario = respuesta;
-                                        var clase = claseReserva(reservas[i]);
-                                        tablaReservas.innerHTML += "<tr class='" + clase + "'><td>" + (sanitario.nombre || "") + " " + (sanitario.apellidos || "") + "</td><td>" + (reservas[i].horas_estimadas || "") + "</td><td>" + formatearFecha(reservas[i].fecha_peticion || "") + "</td><td>" + formatearFecha(reservas[i].fecha_inicio || "") + "</td><td>" + formatearFecha(reservas[i].fecha_fin || "") + "</td></tr>";
-                                    }
-                                    else {
-                                        tablaReservas.innerHTML += "<tr><td>Sanitario desconocido</td><td>" + (reservas[i].horas_estimadas || "") + "</td><td>" + formatearFecha(reservas[i].fecha_peticion || "") + "</td><td>" + formatearFecha(reservas[i].fecha_inicio || "") + "</td><td>" + formatearFecha(reservas[i].fecha_fin || "") + "</td></tr>";
-                                    }
-                                });
-                            }
+function actualizarReservasRealizadas() {
+    var tablaReservasRealizadas = document.getElementById("tabla-reservas-realizadas");
+    tablaReservasRealizadas.innerHTML = ""; // vaciar la tabla
 
+    obtenerReservas(id_sanitario, function (reservas) {
+        if (reservas.length > 0) {
+            var reservas_realizadas = reservas.filter(function (r) { // se filtra por reservas ya iniciadas
+                return r.fecha_inicio != null;
+            });
 
-                            rest.get("/api/recursos/" + id + "/resenyas", function(estado, respuesta) {
-                                if (estado == 200) {
-                                    var resenyas = respuesta;
-                                    var tablaResenyas = document.getElementById("tabla-resenyas-ficha-recurso");
-                                    cambiarSeccion("ficha-recurso");
-                                    for (let i = 0; i < resenyas.length; i++) {
-                                        rest.get("/api/sanitarios/" + resenyas[i].sanitario, function(estado, respuesta) {
-                                            if (estado == 200) {
-                                                var sanitario = respuesta;
-                                                tablaResenyas.innerHTML += "<tr><td>" + formatearFecha(resenyas[i].fecha || "") + "</td><td>" + (sanitario.nombre || "") + " " + (sanitario.apellidos || "") + "</td><td>" + (resenyas[i].valor || "") + "</td><td>" + (resenyas[i].descripcion || "") + "</td></tr>";
-                                            }
-                                            else {
-                                                tablaResenyas.innerHTML += "<tr><td>" + formatearFecha(resenyas[i].fecha || "") + "</td><td>Sanitario desconocido</td><td>" + (resenyas[i].valor || "") + "</td><td>" + (resenyas[i].descripcion || "") + "</td></tr>";
-                                            }
-                                        });
-                                    }
-                                }
-                                else {
-                                    alert("Error al cargar las reseñas del recurso");
-                                }
-                            });
+            reservas_realizadas.sort(function (a, b) { // ordenar por fecha de inicio
+                return b.fecha_inicio - a.fecha_inicio;
+            });
+
+            var filas = new Array(reservas_realizadas.length);
+            var restantes = reservas_realizadas.length;
+
+            for (let i = 0; i < reservas_realizadas.length; i++) {
+                let reserva = reservas_realizadas[i];
+
+                obtenerRecurso(reserva.recurso, function (datosRecurso) {
+                    if (datosRecurso != null) {
+                        var recurso = datosRecurso.recurso;
+                        var celdaFechaFin = "";
+                        var botonResenya = "<button class='boton-resenya' onclick='abrirResenya(" + reserva.recurso + ", \"" + recurso.numero_serie + "\")'>Reseñar</button>";
+
+                        if (reserva.fecha_fin == null) {
+                            celdaFechaFin = "<button class='boton-devolver' onclick='devolverRecurso(" + reserva.id + ")'>Devolver</button>";
                         }
                         else {
-                            alert("Error al cargar las reservas del recurso");
+                            celdaFechaFin = formatearFecha(reserva.fecha_fin);
                         }
-                    });
-                }
-                else {
-                    alert("Error al cargar los modelos");
-                }
-            });
+
+                        filas[i] =
+                            "<tr>" +
+                                "<td>" + (recurso.categoria || "") + "</td>" +
+                                "<td>" + (recurso.modelo || "") + "</td>" +
+                                "<td>" + (recurso.numero_serie || "") + "</td>" +
+                                "<td>" + reserva.horas_estimadas + "</td>" +
+                                "<td>" + formatearFecha(reserva.fecha_inicio) + "</td>" +
+                                "<td>" + celdaFechaFin + "</td>" +
+                                "<td>" + botonResenya + "</td>" +
+                            "</tr>";
+
+                        restantes--;
+                        if (restantes === 0) {
+                            tablaReservasRealizadas.innerHTML = filas.join("");
+                        }
+                    }
+                    else {
+                        filas[i] = "";
+                        restantes--;
+                        if (restantes === 0) {
+                            tablaReservasRealizadas.innerHTML = filas.join("");
+                        }
+                    }
+                });
+            }
         }
         else {
-            alert("Error al cargar el recurso");
+            alert("No se tienen reservas realizadas a mostrar");
         }
     });
 }
 
-function eliminarRecurso(id) {
-    rest.delete("/api/recursos/" + id, function(estado, respuesta) {
-        if (estado == 200) {
-            alert(respuesta.mensaje);
-            actualizarTabla();
-        }
-        else if (estado == 404) {
-            alert(respuesta.mensaje);
+function abrirResenya(idRecurso, numeroSerie) {
+    id_recurso_resenya = idRecurso;
 
-        }
-        else {
-            alert("Error desconocido");
-        }
-    });
+    document.getElementById("numero-serie-resenya").innerHTML = numeroSerie;
+    document.getElementById("valoracion-resenya").value = "";
+    document.getElementById("texto-resenya").value = "";
+
+    cambiarSeccion("resenya");
 }
 
-function nuevoRecurso() {
-    actualizarSelect("-ficha-recurso");
-    document.getElementById("numero-serie-ficha-recurso").value = "";
-    document.getElementById("tabla-reservas-ficha-recurso").innerHTML = "";
-    document.getElementById("tabla-resenyas-ficha-recurso").innerHTML = "";
-    document.getElementById("boton-ficha-recurso").onclick = function() { crearRecurso(); };
-    document.getElementById("boton-ficha-recurso").textContent = "Registrar recurso";
-    cambiarSeccion("ficha-recurso");
-}
+function guardarResenya() {
+    var valoracion = Number(document.getElementById("valoracion-resenya").value);
+    var texto = document.getElementById("texto-resenya").value;
 
-function crearRecurso() {
-    var nuevoRecurso = {
-        categoria: parseInt(document.getElementById("categoria-ficha-recurso").value),
-        modelo: parseInt(document.getElementById("modelo-ficha-recurso").value),
-        numero_serie: document.getElementById("numero-serie-ficha-recurso").value,
-        ubicacion: parseInt(document.getElementById("ubicacion-ficha-recurso").value),
-        estado: parseInt(document.getElementById("estado-ficha-recurso").value)
-    };
-
-    if (isNaN(nuevoRecurso.categoria) || isNaN(nuevoRecurso.modelo) || isNaN(nuevoRecurso.ubicacion) || nuevoRecurso.numero_serie == "") {
-        alert("No se puede registrar el recurso. Rellene todos los campos.");
+    if (texto == "") {
+        alert("Debes escribir un comentario");
         return;
     }
 
-    rest.post("/api/recursos", nuevoRecurso, function(estado, respuesta) {
-        if (estado == 201) {
-            alert(respuesta.mensaje);
-            actualizarTabla();
-            abrirRecurso(respuesta.id);
+    crearResenya(id_recurso_resenya, id_sanitario, valoracion, texto, function(idResenya) {
+        if (idResenya != null) {
+            id_recurso_resenya = null;
+
+            actualizarReservasPendientes();
+            actualizarReservasRealizadas();
+            cambiarSeccion("menu-principal");
         }
         else {
-            alert("Error desconocido");
+            alert("No se pudo guardar la reseña");
         }
     });
 }
 
-function editarRecurso(id) {
-    var recursoEditado = {
-        id: id,
-        categoria: parseInt(document.getElementById("categoria-ficha-recurso").value),
-        modelo: parseInt(document.getElementById("modelo-ficha-recurso").value),
-        numero_serie: document.getElementById("numero-serie-ficha-recurso").value,
-        ubicacion: parseInt(document.getElementById("ubicacion-ficha-recurso").value),
-        estado: parseInt(document.getElementById("estado-ficha-recurso").value)
-    };
+function cancelarResenya() {
+    id_recurso_resenya = null;
+    cambiarSeccion("menu-principal");
+}
 
-    rest.put("/api/recursos/" + id, recursoEditado, function(estado, respuesta) {
-        if (estado == 200) {
-            alert(respuesta.mensaje);
-            actualizarTabla();
-            abrirRecurso(id);
+function retirarRecurso(id, conReserva) { // se llama con el idReserva o idRecurso en funcion de si tiene o no reserva
+    if (conReserva) { // se tiene reserva (aparece en el menu principal)
+        var idReserva = id;
+        iniciarReserva(idReserva, function (ok) {
+            if (ok) {
+                actualizarReservasPendientes();
+                actualizarReservasRealizadas();
+            }
+            else {
+                alert("No se pudo iniciar la reserva");
+            }
+        });
+    }
+    else { // no se tiene reserva (se retira el recurso directamente desde Nueva Reserva)
+        var idRecurso = id;
+        var horas = document.getElementById("tiempo-est-uso-nueva-reserva").value;
+
+        if (horas == "" || horas <= 0) {
+            alert("Introduce un tiempo estimado de uso válido");
+            return;
         }
-        else if (estado == 404) {
-            alert(respuesta.mensaje);
+
+        reservarRecurso(idRecurso, id_sanitario, Number(horas), function(idReserva) {
+            if (idReserva != null) {
+                iniciarReserva(idReserva, function(ok) {
+                    if (ok) {
+                        cambiarSeccion("menu-principal");
+                    }
+                    else {
+                        alert("No se pudo retirar el recurso");
+                    }
+                });
+            }
+            else {
+                alert("No se pudo realizar la reserva");
+            }
+        });
+    }
+}
+
+function abrirnuevaReserva() {
+    cambiarSeccion("nueva-reserva");
+    actualizarSelect("-nueva-reserva");
+
+    document.getElementById("tiempo-est-uso-nueva-reserva").value = "";
+    document.getElementById("tabla-nueva-reserva").innerHTML = "";
+}
+
+function crearnuevaReserva(idRecurso) {
+    var horas = document.getElementById("tiempo-est-uso-nueva-reserva").value;
+
+    if (horas == "" || horas <= 0) {
+        alert("Introduce un tiempo estimado de uso válido");
+        return;
+    }
+
+    reservarRecurso(idRecurso, id_sanitario, Number(horas), function(idReserva) {
+        if (idReserva != null) {
+            alert("Recurso reservado con éxito");
+            cambiarSeccion("menu-principal");
         }
         else {
-            alert("Error desconocido");
+            alert("No se pudo realizar la reserva");
         }
     });
+}
+
+function eliminarReserva(idReserva) {
+    cancelarReserva(idReserva, function (ok) {
+        if (ok) {
+            actualizarReservasPendientes();
+        }
+        else {
+            alert("No se pudo cancelar la reserva");
+        }
+    });
+}
+
+function devolverRecurso(idReserva) {
+    finalizarReserva(idReserva, function (ok) {
+        if (ok) {
+            actualizarReservasPendientes();
+            actualizarReservasRealizadas();
+        }
+        else {
+            alert("No se pudo devolver el recurso");
+        }
+    });
+}
+
+function actualizarTablaNuevaReserva() {
+    var tablaNuevasReservas = document.getElementById("tabla-nueva-reserva");
+    tablaNuevasReservas.innerHTML = "";
+
+    var idModelo = document.getElementById("modelo-nueva-reserva").value;
+
+    if (idModelo != "default") {
+        obtenerRecursos(idModelo, function(recursos) { // solo obtiene recursos operativoss
+            if (recursos.length > 0) {
+                var filas = new Array(recursos.length);
+                var restantes = recursos.length;
+
+                for (let i = 0; i < recursos.length; i++) {
+                    let recurso = recursos[i];
+
+                    tiempoPendiente(recurso.id, function(tiempo) {
+                        obtenerResenyas(recurso.id, function(resenyas) {
+                            var valoracion = calcularValoracionMedia(resenyas);
+                            var accion = "";
+
+                            if (tiempo == 0) {
+                                accion = "<td><button onclick='retirarRecurso(" + recurso.id + "," + false + ")'>Retirar</button></td>";
+                            }
+                            else {
+                                accion = "<td><button onclick='crearnuevaReserva(" + recurso.id + ")'>Reservar</button></td>";
+                            }
+
+                            filas[i] =
+                                "<tr>" +
+                                    "<td>" + recurso.numero_serie + "</td>" +
+                                    "<td>" + recurso.ubicacion + "</td>" +
+                                    "<td>" + formatearTiempoPendiente(tiempo) + "</td>" +
+                                    "<td>" + valoracion + "</td>" +
+                                    accion +
+                                "</tr>";
+
+                            restantes--;
+                            if (restantes === 0) {
+                                tablaNuevasReservas.innerHTML = filas.join("");
+                            }
+                        });
+                    });
+                }
+            }
+        });
+    }
+}
+
+function calcularValoracionMedia(resenyas) {
+    if (resenyas.length == 0) {
+        return "Sin reseñas";
+    }
+
+    var suma = 0;
+    for (var i = 0; i < resenyas.length; i++) {
+        suma += resenyas[i].valor;
+    }
+
+    return (suma / resenyas.length).toFixed(2);
 }
 
 function salir(){
     document.getElementById("usuario-login").value = "";
     document.getElementById("password-login").value = "";
-    document.getElementById("tabla-recursos").innerHTML = "";
     cambiarSeccion("login");
 
 }
 
-function claseReserva(reserva) {
-  var horas = Number(reserva.horas_estimadas);
-
-  var inicio = reserva.fecha_inicio ? new Date(reserva.fecha_inicio) : null;
-  var fin    = reserva.fecha_fin    ? new Date(reserva.fecha_fin)    : null;
-
-  // Finalizada (blanco): fin válida
-  if (fin && !isNaN(fin.getTime())) {
-    return "reserva-finalizada";
-  }
-
-  // Pendiente (verde): inicio no existe o no es válida
-  if (!inicio || isNaN(inicio.getTime())) {
-    return "reserva-pendiente";
-  }
-
-  // En uso: inicio válida y no fin
-  var ahora = new Date();
-  var horasTrans = (ahora.getTime() - inicio.getTime()) / (1000 * 60 * 60);
-
-  // Si horas_estimadas no es número válido -> azul
-  if (!isFinite(horas)) {
-    return "reserva-en-uso-ok";
-  }
-
-  return (horasTrans <= horas) ? "reserva-en-uso-ok" : "reserva-en-uso-mal";
-}
-
 function formatearFecha(fecha) {
-    if (fecha == "") {
+    if (fecha == "" || fecha == null) {
         return "";
     }
 
@@ -550,4 +540,12 @@ function formatearFecha(fecha) {
     var segundos = String(f.getSeconds()).padStart(2, "0");
 
     return dia + "/" + mes + "/" + anyo + "<br>" + horas + ":" + minutos + ":" + segundos;
+}
+
+function formatearTiempoPendiente(tiempo) {
+    if (tiempo === 0) {
+        return "Disponible";
+    }
+
+    return tiempo + " h";
 }
