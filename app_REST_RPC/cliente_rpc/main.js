@@ -202,8 +202,8 @@ function actualizarReservasPendientes() {
                 return r.fecha_inicio == null;
             });
 
-            reservas_pendientes.sort(function (a, b) { // ordenar por fecha de peticion
-                return a.fecha_peticion - b.fecha_peticion;
+            reservas_pendientes.sort(function (a, b) {
+                return new Date(b.fecha_peticion).getTime() - new Date(a.fecha_peticion).getTime();
             });
 
             var filas = new Array(reservas_pendientes.length);
@@ -273,8 +273,8 @@ function actualizarReservasRealizadas() {
                 return r.fecha_inicio != null;
             });
 
-            reservas_realizadas.sort(function (a, b) { // ordenar por fecha de inicio
-                return b.fecha_inicio - a.fecha_inicio;
+            reservas_realizadas.sort(function (a, b) {
+                return new Date(b.fecha_inicio).getTime() - new Date(a.fecha_inicio).getTime();
             });
 
             var filas = new Array(reservas_realizadas.length);
@@ -332,7 +332,7 @@ function abrirResenya(idRecurso, numeroSerie) {
     id_recurso_resenya = idRecurso;
 
     document.getElementById("numero-serie-resenya").innerHTML = numeroSerie;
-    document.getElementById("valoracion-resenya").value = "";
+    document.getElementById("valoracion-resenya").value = 0;
     document.getElementById("texto-resenya").value = "";
 
     cambiarSeccion("resenya");
