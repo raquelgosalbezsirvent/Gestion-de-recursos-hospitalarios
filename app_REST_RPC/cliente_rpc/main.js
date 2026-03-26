@@ -351,6 +351,8 @@ function guardarResenya() {
         if (idResenya != null) {
             id_recurso_resenya = null;
 
+            alert("Valoración grabada con éxito")
+
             actualizarReservasPendientes();
             actualizarReservasRealizadas();
             cambiarSeccion("menu-principal");
@@ -388,9 +390,9 @@ function retirarRecurso(id, conReserva) { // se llama con el idReserva o idRecur
             return;
         }
 
-        reservarRecurso(idRecurso, id_sanitario, Number(horas), function(idReserva) {
-            if (idReserva != null) {
-                iniciarReserva(idReserva, function(ok) {
+        reservarRecurso(idRecurso, id_sanitario, Number(horas), function(respuesta) {
+            if (respuesta.estado == "ok") {
+                iniciarReserva(respuesta.idReserva, function(ok) {
                     if (ok) {
                         cambiarSeccion("menu-principal");
                     }
@@ -398,6 +400,9 @@ function retirarRecurso(id, conReserva) { // se llama con el idReserva o idRecur
                         alert("No se pudo retirar el recurso");
                     }
                 });
+            }
+            else if (respuesta.estado == "duplicada") {
+                alert("Ya tienes una reserva para este recurso");
             }
             else {
                 alert("No se pudo realizar la reserva");
@@ -422,10 +427,13 @@ function crearnuevaReserva(idRecurso) {
         return;
     }
 
-    reservarRecurso(idRecurso, id_sanitario, Number(horas), function(idReserva) {
-        if (idReserva != null) {
+    reservarRecurso(idRecurso, id_sanitario, Number(horas), function(respuesta) {
+        if (respuesta.estado == "ok") {
             alert("Recurso reservado con éxito");
             cambiarSeccion("menu-principal");
+        }
+        else if (respuesta.estado == "duplicada") {
+            alert("Ya tienes una reserva para este recurso");
         }
         else {
             alert("No se pudo realizar la reserva");

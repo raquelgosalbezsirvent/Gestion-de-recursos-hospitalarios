@@ -184,14 +184,31 @@ function reservarRecurso(idRecurso, idSanitario, horasEstimadas, callback) {
     var recurso = recursos.find(r => r.id === idRecurso);
 
     if (sanitario == undefined || recurso == undefined) {
-        return callback(null);
+        return callback({estado: "error"});
     }
-    else {
-        var idReserva = ids_reservas;
-        ids_reservas++;
-        reservas.push({id: idReserva, recurso: recurso.id, sanitario: sanitario.id, horas_estimadas: horasEstimadas, fecha_peticion: new Date(), fecha_inicio: null, fecha_fin: null});
-        return callback (idReserva);
+
+    for (var i = 0; i < reservas.length; i++) {
+        if (reservas[i].recurso == idRecurso &&
+            reservas[i].sanitario == idSanitario &&
+            reservas[i].fecha_fin == null) {
+            return callback({estado: "duplicada"});
+        }
     }
+
+    var idReserva = ids_reservas;
+    ids_reservas++;
+
+    reservas.push({
+        id: idReserva,
+        recurso: recurso.id,
+        sanitario: sanitario.id,
+        horas_estimadas: horasEstimadas,
+        fecha_peticion: new Date(ahora),
+        fecha_inicio: null,
+        fecha_fin: null
+    });
+
+    return callback({estado: "ok", idReserva: idReserva});
 }
 
 function cancelarReserva(idReserva, callback) {
