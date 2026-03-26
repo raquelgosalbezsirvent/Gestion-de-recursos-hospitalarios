@@ -76,9 +76,6 @@ label{
   font-size: 18px;
 }
 
-#login div::first-letter,
-#datos-usuarios div::first-letter{}
-
 /* En login/datos-usuario el texto "Usuario:", etc. es texto plano.
    Le damos estilo similar al azul del label */
 #login div, #datos-usuarios div{
