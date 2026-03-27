@@ -45,19 +45,21 @@ var modelos = [
 
 var recursos = [
   { id: 1, modelo: 1, ubicacion: 4, numero_serie: "TF-T1-0001", estado: 0 },
-  { id: 2, modelo: 2, ubicacion: 2, numero_serie: "TP-T1-0001", estado: 1 },
+  { id: 2, modelo: 2, ubicacion: 2, numero_serie: "TP-T1-0001", estado: 0 },
   { id: 3, modelo: 3, ubicacion: 1, numero_serie: "SC-CL-0100", estado: 0 },
-  { id: 4, modelo: 5, ubicacion: 1, numero_serie: "WG-B-2001", estado: 2 },
+  { id: 4, modelo: 5, ubicacion: 1, numero_serie: "WG-B-2001", estado: 0 },
   { id: 5, modelo: 7, ubicacion: 3, numero_serie: "C-E-7770", estado: 0 },
-  { id: 6, modelo: 8, ubicacion: 5, numero_serie: "C-P-8891", estado: 1 },
-  { id: 7, modelo: 1, ubicacion: 2, numero_serie: "TF-T1-0002", estado: 2 },
+  { id: 6, modelo: 8, ubicacion: 5, numero_serie: "C-P-8891", estado: 0 },
+  { id: 7, modelo: 1, ubicacion: 2, numero_serie: "TF-T1-0002", estado: 0 },
   { id: 8, modelo: 2, ubicacion: 3, numero_serie: "TP-X2-0002", estado: 0 },
-  { id: 9, modelo: 3, ubicacion: 4, numero_serie: "SC-CL-0101", estado: 1 },
-  { id: 10, modelo: 4, ubicacion: 5, numero_serie: "CS-PRO-0001", estado: 2 },
+  { id: 9, modelo: 3, ubicacion: 4, numero_serie: "SC-CL-0101", estado: 0 },
+  { id: 10, modelo: 4, ubicacion: 5, numero_serie: "CS-PRO-0001", estado: 0 },
   { id: 11, modelo: 5, ubicacion: 1, numero_serie: "WG-B-2002", estado: 0 },
-  { id: 12, modelo: 6, ubicacion: 2, numero_serie: "WG-P-3001", estado: 1 },
-  { id: 13, modelo: 7, ubicacion: 2, numero_serie: "C-E-7771", estado: 2 },
-  { id: 14, modelo: 8, ubicacion: 3, numero_serie: "C-P-8892", estado: 0 }
+  { id: 12, modelo: 6, ubicacion: 2, numero_serie: "WG-P-3001", estado: 0 },
+  { id: 13, modelo: 7, ubicacion: 2, numero_serie: "C-E-7771", estado: 0 },
+  { id: 14, modelo: 8, ubicacion: 3, numero_serie: "C-P-8892", estado: 0 },
+  { id: 15, modelo: 4, ubicacion: 4, numero_serie: "CS-PRO-0002", estado: 1 },
+  { id: 16, modelo: 6, ubicacion: 4, numero_serie: "WG-P-3002", estado: 2 }
 ];
 
 
@@ -79,20 +81,20 @@ var reservas = [
   { id: 8,  recurso: 4, sanitario: 1, horas_estimadas: 3, fecha_peticion: new Date("2026-02-25T10:20:00"), fecha_inicio: null, fecha_fin: null },
 
   // RECURSO 5 -> activa a tiempo, sin cola
-  { id: 9,  recurso: 5, sanitario: 2, horas_estimadas: 5, fecha_peticion: new Date("2026-02-25T06:45:00"), fecha_inicio: new Date("2026-02-25T10:00:00"), fecha_fin: null },
+  { id: 9,  recurso: 5, sanitario: 1, horas_estimadas: 5, fecha_peticion: new Date("2026-02-25T06:45:00"), fecha_inicio: new Date("2026-02-25T10:00:00"), fecha_fin: null },
 
   // RECURSO 6 -> activa retrasada, sin cola
   { id: 10, recurso: 6, sanitario: 1, horas_estimadas: 1, fecha_peticion: new Date("2026-02-25T07:40:00"), fecha_inicio: new Date("2026-02-25T10:30:00"), fecha_fin: null },
 
   // RECURSO 7 -> libre, sin cola, con varias finalizadas
-  { id: 11, recurso: 7, sanitario: 3, horas_estimadas: 2, fecha_peticion: new Date("2026-02-23T08:15:00"), fecha_inicio: new Date("2026-02-23T09:00:00"), fecha_fin: new Date("2026-02-23T10:40:00") },
-  { id: 12, recurso: 7, sanitario: 2, horas_estimadas: 1, fecha_peticion: new Date("2026-02-24T12:00:00"), fecha_inicio: new Date("2026-02-24T12:20:00"), fecha_fin: new Date("2026-02-24T13:00:00") },
+  { id: 11, recurso: 7, sanitario: 1, horas_estimadas: 2, fecha_peticion: new Date("2026-02-23T08:15:00"), fecha_inicio: new Date("2026-02-23T09:00:00"), fecha_fin: new Date("2026-02-23T10:40:00") },
+  { id: 12, recurso: 7, sanitario: 1, horas_estimadas: 1, fecha_peticion: new Date("2026-02-24T12:00:00"), fecha_inicio: new Date("2026-02-24T12:20:00"), fecha_fin: new Date("2026-02-24T13:00:00") },
 
   // RECURSO 8 -> pendiente detrás de una activa a tiempo
   { id: 13, recurso: 8, sanitario: 3, horas_estimadas: 4, fecha_peticion: new Date("2026-02-25T08:00:00"), fecha_inicio: new Date("2026-02-25T11:30:00"), fecha_fin: null },
   { id: 14, recurso: 8, sanitario: 1, horas_estimadas: 2, fecha_peticion: new Date("2026-02-25T09:00:00"), fecha_inicio: null, fecha_fin: null },
 
-  // RECURSO 9 -> pendiente única
+  // RECURSO 9 -> pendiente, sin cola
   { id: 15, recurso: 9, sanitario: 2, horas_estimadas: 2, fecha_peticion: new Date("2026-02-25T11:50:00"), fecha_inicio: null, fecha_fin: null },
 
   // RECURSO 10 -> activa retrasada + pendiente

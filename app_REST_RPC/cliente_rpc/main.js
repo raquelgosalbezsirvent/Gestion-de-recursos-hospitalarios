@@ -37,7 +37,12 @@ function cambiarSeccion(seccion){
 
     seccionActual=seccion;
 
-    document.getElementById("ahora").innerHTML = formatearFecha(ahora);
+    if (seccion == "login") {
+        document.getElementById("ahora").innerHTML = "";
+    }
+    else {
+        document.getElementById("ahora").innerHTML = formatearFecha(ahora);
+    }
 }
 
 function entrar(){
