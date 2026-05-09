@@ -1,0 +1,178 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf8">
+    <title>Gestión de recursos hospitalarios - Sanitarios</title>
+    <link rel="stylesheet" href="estilos.css">
+    <script src="rest.js"></script> 
+	<script src="rpc.js"></script>
+	<script src="main.js"></script>
+</head>
+
+
+<body>
+
+    <h1>Aplicación Sanitario</h1>
+
+    <div id="login" class="mostrar">
+        <h2>Acceso</h2>
+       <div><label for="usuario-login">Usuario:</label> <input id="usuario-login" /></div> 
+       <div><label for="password-login">Contraseña:</label> <input id="password-login" type="password"/></div>
+       <div class="fila-botones">
+        <button onclick="entrar()">Entrar</button> 
+        <button onclick="registro_usuario()">Registrarse</button>
+        </div>
+    </div>
+
+    <div id="menu-principal" class="ocultar">
+        <h2>Inicio</h2>
+        <div id="bienvenida"></div>
+        <button onclick="datos_usuario()">Editar datos</button>
+
+        <h3>Reservas pendientes</h3>
+        <div id="contenedor-tabla-reservas-pendientes">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Categoría</th>
+                        <th>Modelo</th>
+                        <th>Nº Serie</th>
+                        <th>Ubicación</th>
+                        <th>Fecha petición</th>
+                        <th>Tiempo restante</th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-reservas-pendientes">
+                </tbody>
+            </table>
+        </div>
+
+        <h3>Reservas realizadas</h3>
+        <div id="contenedor-tabla-reservas-realizadas">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Categoría</th>
+                        <th>Modelo</th>
+                        <th>Nº Serie</th>
+                        <th>Horas estim. de uso</th>
+                        <th>Fecha inicio</th>
+                        <th>Fecha fin</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-reservas-realizadas">
+                </tbody>
+            </table>
+        </div>
+        <div>
+            <button onclick="abrirnuevaReserva()">Nueva reserva</button>
+        </div>
+
+        <h3>Avisos</h3>
+        <div id="contenedor-tabla-avisos">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Origen</th>
+                        <th>Aviso</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-avisos">
+                </tbody>
+            </table>
+        </div>
+        <div>
+            <button onclick="salir()">Salir</button>
+        </div>
+    </div>
+
+    <div id="datos-usuarios" class="ocultar">
+        <h2>Datos del Sanitario</h2>
+        <div><label for="nombre-registro">Nombre:</label> <input id="nombre-registro" /></div>
+        <div><label for="apellidos-registro">Apellidos:</label> <input id="apellidos-registro"/></div>
+        <div><label for="usuario-registro">Login:</label> <input id="usuario-registro"/></div>
+        <div><label for="password-registro">Contraseña:</label> <input id="password-registro" type="password"/></div>
+        <button onclick="" id="boton-datos-usuario"></button> <!--Depende de si es registro o edicion-->
+        <button onclick="" id="boton-datos-usuario-cancelar">Cancelar</button> <!--En edicion vuelve a menu, en registro vuelve a login-->
+    </div>
+
+    <div id="nueva-reserva" class="ocultar">
+    <h2>Nueva Reserva</h2>
+
+    <div>
+        <label for="categoria-nueva-reserva">Categoría:</label>
+        <select id="categoria-nueva-reserva" onchange="filtrarModelo('-nueva-reserva')">
+        </select>
+    </div>
+    <div>
+        <label for="modelo-nueva-reserva">Modelo:</label>
+        <select id="modelo-nueva-reserva" onchange="actualizarTablaNuevaReserva()">
+        </select>
+    </div>
+    <div>
+        <label for="tiempo-est-uso-nueva-reserva">Tiempo estim. de uso:</label>
+        <input id="tiempo-est-uso-nueva-reserva" type="number" min="1"/>
+    </div>
+
+    <div id="contenedor-tabla-nueva-reserva">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nº Serie</th>
+                    <th>Ubicación</th>
+                    <th>Horas restantes</th>
+                    <th>Valoración</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="tabla-nueva-reserva">
+            </tbody>
+        </table>
+    </div>
+
+    <div>
+        <button onclick="cambiarSeccion('menu-principal')">Volver al inicio</button>
+    </div>
+</div>
+
+    <div id="resenya" class="ocultar">
+        <h2>Nueva reseña</h2>
+
+        <div>
+            <label>Recurso:</label>
+            <span id="numero-serie-resenya"></span>
+        </div>
+
+        <div>
+            <label for="valoracion-resenya">Valoración:</label>
+            <select id="valoracion-resenya">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+            </select>
+        </div>
+
+        <div>
+            <label for="texto-resenya">Comentario:</label><br>
+            <textarea id="texto-resenya"></textarea>
+        </div>
+
+        <div>
+            <button onclick="guardarResenya()">Guardar</button>
+            <button onclick="cancelarResenya()">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="ahora"></div>
+        
+<script src="rest.js"></script>
+<script src="main.js"></script>
+</body>
+</html>
