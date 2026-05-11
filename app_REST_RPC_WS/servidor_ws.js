@@ -151,10 +151,10 @@ function avisoReserva(ws, idReserva, accion) {
     var textoAccion = "";
 
     if (accion == "inicio") {
-        textoAccion = "Se ha iniciado la reserva del ";
+        textoAccion = "Se ha iniciado la reserva de: ";
     }
     else if (accion == "fin") {
-        textoAccion = "Se ha finalizado la reserva del ";
+        textoAccion = "Se ha finalizado la reserva de: ";
     }
     else {
         return;

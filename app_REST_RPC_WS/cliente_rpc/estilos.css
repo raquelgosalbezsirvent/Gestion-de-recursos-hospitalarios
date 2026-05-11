@@ -300,6 +300,43 @@ td:last-child{
 }
 
 /* ====== AVISOS ====== */
+
+#contenedor-tabla-avisos {
+  width: 100%;
+  overflow: hidden;
+}
+
+#contenedor-tabla-avisos table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+#contenedor-tabla-avisos th,
+#contenedor-tabla-avisos td {
+  padding: 6px;
+  vertical-align: middle;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+#contenedor-tabla-avisos th:nth-child(1),
+#contenedor-tabla-avisos td:nth-child(1) {
+  width: 75px;
+}
+
+#contenedor-tabla-avisos th:nth-child(2),
+#contenedor-tabla-avisos td:nth-child(2) {
+  width: 90px;
+}
+
+#contenedor-tabla-avisos th:nth-child(3),
+#contenedor-tabla-avisos td:nth-child(3) {
+  width: auto;
+  text-align: left;
+}
+
 .aviso-rojo {
   background: #ffc7c7;
 }
@@ -310,8 +347,4 @@ td:last-child{
 
 .aviso-verde {
   background: #c8f7c8;
-}
-
-#tabla-avisos td {
-  line-height: 1.25;
 }
